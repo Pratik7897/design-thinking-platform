@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import jsPDF from 'jspdf'
 
 import PhaseCard from '../components/PhaseCard'

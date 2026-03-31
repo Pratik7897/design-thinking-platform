@@ -1,4 +1,4 @@
-
+import { motion } from 'framer-motion'
 import './CircularNav.css'
 
 const PHASE_LABELS = ['Empathize', 'Define', 'Ideate', 'Prototype', 'Test', 'Refine']
