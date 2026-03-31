@@ -1,0 +1,41 @@
+.circular-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.cn-center-text {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 900;
+  font-size: 14px;
+  fill: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+.cn-center-subtext {
+  font-family: 'Inter', sans-serif;
+  font-size: 8px;
+  fill: var(--text-muted);
+  font-weight: 500;
+}
+
+.cn-node-emoji {
+  dominant-baseline: middle;
+  user-select: none;
+  pointer-events: none;
+}
+
+.cn-phase-label {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  fill: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  transition: all 0.3s;
+}
+
+.cn-phase-label--active {
+  fill: var(--text-primary);
+  font-weight: 800;
+}
