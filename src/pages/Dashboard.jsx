@@ -116,14 +116,6 @@ export default function Dashboard({ analysis, productData, onNewAnalysis }) {
     }
   }
 
-      pdf.save(`${meta.productName || 'analysis'}-design-thinking.pdf`)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setExporting(false)
-    }
-  }
-
   const activePhaseKey = PHASE_KEYS[activePhaseIndex]
 
   return (
