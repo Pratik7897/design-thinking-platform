@@ -3,13 +3,22 @@
  * Managed multi-provider architecture for ThinkLens Pro
  */
 export const generateFromOpenRouter = async (prompt, isJson = true) => {
+  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+  
+  if (!apiKey || apiKey === "undefined") {
+    console.error("[AI CLIENT ERROR] OpenRouter API Key is MISSING in .env file!");
+    throw new Error("API Key Missing");
+  }
+
+  console.log(`[AI CLIENT] Headers initialized for ${apiKey.substring(0, 10)}...`);
+
   try {
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
+        "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost:5173", // Required for some OpenRouter models
+        "HTTP-Referer": window.location.origin || "http://localhost:5173",
         "X-Title": "ThinkLens Pro"
       },
       body: JSON.stringify({
