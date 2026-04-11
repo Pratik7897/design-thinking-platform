@@ -1,6 +1,5 @@
 .proc-page {
   min-height: 100vh;
-  background: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8,212 +7,169 @@
   overflow: hidden;
 }
 
-.proc-bg {
+.proc-bg-3d {
   position: absolute;
   inset: 0;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, 1fr);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   pointer-events: none;
 }
 
-.proc-orb {
+.proc-orb-3d {
+  position: absolute;
   border-radius: 50%;
-  width: 300px;
-  height: 300px;
+  width: 40vw;
+  height: 40vw;
   background: var(--orb-color);
-  filter: blur(100px);
-  transition: all 0.9s ease;
+  filter: blur(120px);
 }
 
-.proc-container {
+.proc-container-immersive {
   position: relative;
-  z-index: 1;
+  z-index: 10;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 28px;
-  padding: 40px 24px;
-  max-width: 600px;
+  items-center: center;
+  gap: 40px;
   width: 100%;
+  max-width: 600px;
   text-align: center;
 }
 
 .proc-logo {
+  padding: 10px 24px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  margin: 0 auto;
+  gap: 12px;
+}
+
+.proc-logo .logo-text {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 900;
+  font-size: 20px;
+}
+
+/* 3D VISUALIZATION */
+.proc-visual-3d {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  margin: 0 auto;
+  perspective: 1000px;
+}
+
+.proc-center-glass {
+  position: absolute;
+  inset: 40px;
+  border-radius: var(--radius-xl);
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  box-shadow: var(--shadow-2xl);
 }
 
-.proc-logo .logo-icon { font-size: 26px; color: white; }
-.proc-logo .logo-text { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 20px; color: white; }
-
-.proc-visual {
-  position: relative;
-  width: 280px;
-  height: 280px;
+.proc-phase-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
 }
 
-.proc-ring {
+.status-emoji {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+}
+
+.status-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+}
+
+.status-name {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 900;
+  font-size: 24px;
+  color: var(--text-primary);
+}
+
+/* ORBIT RINGS */
+.proc-orbit-rings {
   position: absolute;
   inset: 0;
+  pointer-events: none;
 }
 
-.proc-phase-dot {
+.orbit-ring {
   position: absolute;
-  transform: translate(-50%, -50%);
-  width: 46px;
-  height: 46px;
+  inset: 0;
+  border: 1px solid var(--glass-border);
   border-radius: 50%;
-  background: var(--dot-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  border: 3px solid rgba(255,255,255,0.2);
-  transition: all 0.4s ease;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  animation: rotate 10s linear infinite;
 }
 
-.proc-dot-done {
-  background: rgba(255,255,255,0.9) !important;
-  color: var(--text-primary);
-  font-size: 16px;
-  font-weight: 800;
-  border-color: rgba(255,255,255,0.6);
+.ring-1 { transform: rotateX(60deg) rotateY(20deg); }
+.ring-2 { transform: rotateX(-60deg) rotateY(-20deg); animation-duration: 8s; }
+
+@keyframes rotate {
+  from { transform: rotateX(60deg) rotateY(20deg) rotateZ(0deg); }
+  to { transform: rotateX(60deg) rotateY(20deg) rotateZ(360deg); }
 }
 
-.proc-dot-active {
-  border: 3px solid white;
-  box-shadow: 0 0 0 4px rgba(255,255,255,0.2), 0 8px 24px rgba(0,0,0,0.4);
-}
-
-.proc-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 130px;
-  height: 130px;
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.proc-phase-display {
+/* INFO CARD */
+.proc-info-card {
+  padding: 24px;
+  border-radius: var(--radius-xl);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
+  gap: 16px;
 }
 
-.proc-phase-emoji {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-}
-
-.proc-phase-name {
-  font-family: 'Poppins', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  color: white;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.proc-product-name {
-  font-size: 20px;
-  color: rgba(255,255,255,0.9);
-  font-weight: 400;
-}
-
-.proc-product-name strong {
-  color: white;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 800;
-}
-
-.proc-message {
-  font-size: 15px;
-  color: rgba(255,255,255,0.6);
-  font-style: italic;
-  min-height: 22px;
-}
-
-.proc-progress-wrap {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: center;
-}
-
-.proc-progress-bar {
-  width: 100%;
-  max-width: 360px;
-  height: 6px;
-  background: rgba(255,255,255,0.12);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.proc-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--empathize), var(--define), var(--ideate), var(--prototype), var(--test));
-  border-radius: 3px;
-  transition: width 0.6s ease;
-}
-
-.proc-progress-text {
-  font-size: 13px;
-  color: rgba(255,255,255,0.5);
-  font-weight: 500;
-}
-
-.proc-phases-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  max-width: 480px;
-}
-
-.proc-phase-pill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  border-radius: var(--radius-full);
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
+.proc-product-badge {
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
   font-size: 12px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.4);
-  transition: all 0.3s ease;
-}
-
-.pill-done {
-  background: var(--pill-color);
-  border-color: var(--pill-color);
+  font-weight: 800;
   color: var(--text-primary);
-  opacity: 0.9;
+  display: inline-block;
+  margin: 0 auto;
 }
 
-.pill-active {
-  background: rgba(255,255,255,0.15);
-  border-color: var(--pill-color);
-  color: white;
-  box-shadow: 0 0 12px rgba(255,255,255,0.1);
+.proc-message-text {
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.6;
 }
 
-.pill-emoji { font-size: 14px; }
-.pill-name { font-family: 'Poppins', sans-serif; }
+/* PROGRESS IMMERSIVE */
+.proc-progress-immersive {
+  width: 100%;
+}
+
+.progress-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.progress-track-3d {
+  height: 12px;
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.progress-fill-3d {
+  height: 100%;
+  border-radius: 4px;
+}
