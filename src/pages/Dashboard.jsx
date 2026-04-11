@@ -6,7 +6,18 @@ import PhaseCard from '../components/PhaseCard'
 import CircularNav from '../components/CircularNav'
 import './Dashboard.css'
 
-const PHASE_KEYS = ['empathize', 'define', 'ideate', 'prototype', 'test', 'refine']
+const PHASE_KEYS = [
+  'problem_definition',
+  'user_segmentation',
+  'empathy_mapping',
+  'pain_point_analysis',
+  'competitive_analysis',
+  'ideation',
+  'feature_prioritization',
+  'user_journey_mapping',
+  'prototyping_strategy',
+  'validation_feedback'
+]
 
 export default function Dashboard({ analysis, productData, onNewAnalysis }) {
   const [activePhaseIndex, setActivePhaseIndex] = useState(0)
@@ -37,77 +48,73 @@ export default function Dashboard({ analysis, productData, onNewAnalysis }) {
       pdf.setFillColor(26, 26, 46)
       pdf.rect(0, 0, pageW, pageH, 'F')
       pdf.setTextColor(255, 255, 255)
-      pdf.setFontSize(28)
+      pdf.setFontSize(32)
       pdf.setFont('helvetica', 'bold')
-      pdf.text('Design Thinking Analysis', pageW / 2, 60, { align: 'center' })
-      pdf.setFontSize(18)
+      pdf.text('Design Thinking Multi-Phase Report', pageW / 2, 60, { align: 'center' })
+      pdf.setFontSize(22)
       pdf.setFont('helvetica', 'normal')
       pdf.text(meta.productName || 'Product', pageW / 2, 80, { align: 'center' })
+      
       pdf.setFontSize(12)
       pdf.setTextColor(160, 160, 180)
-      pdf.text(`Category: ${meta.category || 'N/A'}`, pageW / 2, 100, { align: 'center' })
-      pdf.text(`Stage: ${meta.currentStage || 'N/A'}`, pageW / 2, 112, { align: 'center' })
-      pdf.text(`Generated: ${new Date(meta.generatedAt).toLocaleDateString()}`, pageW / 2, 124, { align: 'center' })
+      pdf.text(`Industry Context: ${meta.category || 'N/A'}`, pageW / 2, 100, { align: 'center' })
+      pdf.text(`10-Phase Deep Analysis`, pageW / 2, 112, { align: 'center' })
+      pdf.text(`Generated on: ${new Date(meta.generatedAt).toLocaleDateString()}`, pageW / 2, 124, { align: 'center' })
 
       // Content pages
-      const phaseColors = {
-        empathize: [255, 217, 102],
-        define: [255, 155, 133],
-        ideate: [233, 117, 186],
-        prototype: [91, 127, 176],
-        test: [77, 191, 181],
-        refine: [168, 181, 196],
-      }
-
       PHASE_KEYS.forEach((key, idx) => {
         const phase = phases[key]
-        const color = phaseColors[key]
+        if (!phase) return
+        
         pdf.addPage()
 
-        // Header
-        pdf.setFillColor(...color)
-        pdf.rect(0, 0, pageW, 30, 'F')
-        pdf.setTextColor(26, 26, 46)
-        pdf.setFontSize(18)
+        // Phase Header
+        pdf.setFillColor(phase.primary || '#000000')
+        pdf.rect(0, 0, pageW, 40, 'F')
+        pdf.setTextColor(255, 255, 255)
+        pdf.setFontSize(20)
         pdf.setFont('helvetica', 'bold')
-        pdf.text(`${idx + 1}. ${phase.title.toUpperCase()}`, 15, 20)
+        pdf.text(`${idx + 1}. ${(phase.title || key).toUpperCase()}`, 15, 25)
 
         // Tagline
-        pdf.setTextColor(80, 80, 100)
+        pdf.setTextColor(100, 100, 120)
         pdf.setFontSize(11)
         pdf.setFont('helvetica', 'italic')
-        pdf.text(phase.tagline || '', 15, 42)
+        pdf.text(phase.tagline || '', 15, 52)
 
-        // Key Insights
+        // Sections
         pdf.setTextColor(26, 26, 46)
-        pdf.setFontSize(13)
         pdf.setFont('helvetica', 'bold')
-        pdf.text('Key Insights', 15, 58)
+        pdf.setFontSize(14)
+        pdf.text('Key Insights', 15, 68)
 
-        pdf.setFontSize(10)
         pdf.setFont('helvetica', 'normal')
+        pdf.setFontSize(10)
         const insights = phase.keyInsights || []
-        insights.slice(0, 5).forEach((insight, i) => {
+        insights.forEach((insight, i) => {
           const lines = pdf.splitTextToSize(`• ${insight}`, pageW - 30)
-          pdf.text(lines, 15, 68 + i * 16)
+          pdf.text(lines, 15, 78 + i * 14)
         })
 
         // Action Items
-        const actionY = 68 + Math.min(insights.length, 5) * 16 + 16
-        pdf.setFontSize(13)
+        const actionY = 78 + (insights.length * 14) + 10
         pdf.setFont('helvetica', 'bold')
-        pdf.setTextColor(26, 26, 46)
-        pdf.text('Action Items', 15, actionY)
-
-        const actions = phase.actionItems || []
-        pdf.setFontSize(10)
+        pdf.text('Strategic Action Items', 15, actionY)
+        
         pdf.setFont('helvetica', 'normal')
-        actions.forEach((item, i) => {
-          const text = `→ ${item.action} [${item.timeline}]`
-          const lines = pdf.splitTextToSize(text, pageW - 30)
-          pdf.text(lines, 15, actionY + 10 + i * 16)
+        const items = phase.actionItems || []
+        items.forEach((item, i) => {
+          pdf.text(`→ ${item.action} (${item.timeline})`, 15, actionY + 8 + i * 8)
         })
       })
+
+      pdf.save(`${meta.productName || 'analysis'}-strategy.pdf`)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setExporting(false)
+    }
+  }
 
       pdf.save(`${meta.productName || 'analysis'}-design-thinking.pdf`)
     } catch (err) {
