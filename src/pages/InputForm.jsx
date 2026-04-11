@@ -228,32 +228,23 @@ export default function InputForm({ onSubmit, onBack }) {
                       </button>
                     ))}
                   </div>
+                  {form.category === 'Other (Custom)' && (
+                    <input
+                      type="text"
+                      className="field-input glass-input nm-inset mt-4"
+                      placeholder="Specify your industry..."
+                      value={form.customIndustry}
+                      onChange={e => handleChange('customIndustry', e.target.value)}
+                    />
+                  )}
                   {errors.category && <p className="error-msg">{errors.category}</p>}
                 </div>
               )}
 
               {step === 4 && (
                 <div className="field-group">
-                  <h2 className="step-title">What's the current lifecycle?</h2>
-                  <div className="mcq-column">
-                    {STAGES.map(s => (
-                      <button
-                        key={s.value}
-                        className={`mcq-row ${form.currentStage === s.value ? 'active' : ''}`}
-                        onClick={() => handleChange('currentStage', s.value)}
-                      >
-                        <span className="mcq-row-label">{s.label}</span>
-                        <span className="mcq-row-desc">{s.description}</span>
-                      </button>
-                    ))}
-                  </div>
-                  {errors.currentStage && <p className="error-msg">{errors.currentStage}</p>}
-                </div>
-              )}
-
-              {step === 5 && (
-                <div className="field-group">
                   <h2 className="step-title">Who are you building for?</h2>
+                  <p className="step-subtitle">Multi-select allowed</p>
                   <div className="mcq-grid">
                     {AUDIENCES.map(a => (
                       <button
@@ -266,10 +257,89 @@ export default function InputForm({ onSubmit, onBack }) {
                       </button>
                     ))}
                   </div>
+                  {form.targetMarket.includes('Custom Audience') && (
+                    <input
+                      type="text"
+                      className="field-input glass-input nm-inset mt-4"
+                      placeholder="Describe your specific audience..."
+                      value={form.customAudience}
+                      onChange={e => handleChange('customAudience', e.target.value)}
+                    />
+                  )}
+                </div>
+              )}
+
+              {step === 5 && (
+                <div className="field-group">
+                  <h2 className="step-title">What is the core problem?</h2>
+                  <textarea
+                    className="field-input glass-input nm-inset"
+                    style={{ height: '150px' }}
+                    placeholder="Describe the main pain point you're addressing..."
+                    value={form.problemStatement}
+                    onChange={e => handleChange('problemStatement', e.target.value)}
+                  />
+                  {errors.problemStatement && <p className="error-msg">{errors.problemStatement}</p>}
                 </div>
               )}
 
               {step === 6 && (
+                <div className="field-group">
+                  <h2 className="step-title">Who are the competitors?</h2>
+                  <textarea
+                    className="field-input glass-input nm-inset"
+                    style={{ height: '120px' }}
+                    placeholder="Direct or indirect rivals..."
+                    value={form.competitors}
+                    onChange={e => handleChange('competitors', e.target.value)}
+                  />
+                </div>
+              )}
+
+              {step === 7 && (
+                <div className="field-group">
+                  <h2 className="step-title">Key features of your solution?</h2>
+                  <textarea
+                    className="field-input glass-input nm-inset"
+                    style={{ height: '120px' }}
+                    placeholder="Top 3-5 features..."
+                    value={form.keyFeatures}
+                    onChange={e => handleChange('keyFeatures', e.target.value)}
+                  />
+                </div>
+              )}
+
+              {step === 8 && (
+                <div className="field-group">
+                  <h2 className="step-title">What's your monetization model?</h2>
+                  <textarea
+                    className="field-input glass-input nm-inset"
+                    style={{ height: '120px' }}
+                    placeholder="Subscription, ads, one-time payment, etc."
+                    value={form.monetization}
+                    onChange={e => handleChange('monetization', e.target.value)}
+                  />
+                </div>
+              )}
+
+              {step === 9 && (
+                <div className="field-group">
+                  <h2 className="step-title">On which platform will this live?</h2>
+                  <div className="mcq-grid">
+                    {['Web App', 'Mobile (iOS/Android)', 'Desktop App', 'AI Agent / Bot', 'Hardware / IoT'].map(p => (
+                      <button
+                        key={p}
+                        className={`mcq-card ${form.platform === p ? 'active' : ''}`}
+                        onClick={() => handleChange('platform', p)}
+                      >
+                        <span className="mcq-label">{p}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {step === 10 && (
                 <div className="field-group">
                   <h2 className="step-title">Add a visual touch <small>(Optional)</small></h2>
                   <div
