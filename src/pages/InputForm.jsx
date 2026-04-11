@@ -51,9 +51,14 @@ export default function InputForm({ onSubmit, onBack }) {
     description: '',
     goal: '',
     category: '',
-    otherCategory: '',
+    customIndustry: '',
     targetMarket: [],
-    currentStage: '',
+    customAudience: '',
+    problemStatement: '',
+    competitors: '',
+    keyFeatures: '',
+    monetization: '',
+    platform: '',
     image: null,
     imagePreview: null,
   })
@@ -81,14 +86,15 @@ export default function InputForm({ onSubmit, onBack }) {
     if (s === 1 && !form.productName.trim()) e.productName = 'Please enter a name'
     if (s === 2 && !form.goal && !form.description.trim()) e.goal = 'Please select a goal or describe it'
     if (s === 3 && !form.category) e.category = 'Please select a category'
-    if (s === 4 && !form.currentStage) e.currentStage = 'Please select a stage'
-    setErrors(e)
+    if (s === 3 && form.category === 'Other (Custom)' && !form.customIndustry.trim()) e.customIndustry = 'Please specify'
+    if (s === 4 && form.targetMarket.length === 0) e.targetMarket = 'Select at least one'
+    if (s === 5 && !form.problemStatement.trim()) e.problemStatement = 'Briefly state the core problem'
     return Object.keys(e).length === 0
   }
 
   const handleNext = () => {
     if (validateStep(step)) {
-      if (step < 6) setStep(step + 1)
+      if (step < 11) setStep(step + 1)
       else handleSubmit()
     }
   }
