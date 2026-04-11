@@ -369,7 +369,7 @@ export default function InputForm({ onSubmit, onBack }) {
 
           <div className="iform-footer">
             <button className="next-btn nm-flat" onClick={handleNext}>
-              {step === 6 ? 'LAUNCH 3D ANALYSIS' : 'CONTINUE →'}
+              {step === 10 ? 'LAUNCH 3D ANALYSIS' : 'CONTINUE →'}
             </button>
           </div>
         </motion.div>
