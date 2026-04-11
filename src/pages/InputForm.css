@@ -1,9 +1,6 @@
 .iform-page {
   min-height: 100vh;
-  background: var(--bg-primary);
-  position: relative;
-  overflow-x: hidden;
-  padding: 40px 0 100px;
+  padding: 60px 0 100px;
 }
 
 .iform-bg {
@@ -16,277 +13,215 @@
 .bg-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.4;
+  filter: blur(140px);
+  opacity: 0.3;
 }
 
 .bg-blob-1 {
   width: 600px; height: 600px;
-  background: var(--ideate-light);
+  background: var(--ideate);
   top: -200px; right: -100px;
 }
 
 .bg-blob-2 {
   width: 500px; height: 500px;
-  background: var(--prototype-light);
+  background: var(--prototype);
   bottom: -150px; left: -100px;
 }
 
 .iform-container {
-  max-width: 800px;
+  max-width: 850px;
   margin: 0 auto;
   padding: 0 24px;
   position: relative;
-  z-index: 1;
+  z-index: 10;
 }
 
 .iform-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 40px;
-  gap: 24px;
+  margin-bottom: 50px;
+  gap: 32px;
 }
 
 .back-btn {
-  padding: 12px 24px;
+  padding: 14px 28px;
   border-radius: var(--radius-full);
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 800;
+  font-size: 13px;
   color: var(--text-primary);
-  transition: var(--transition-smooth);
-}
-
-.back-btn:hover {
-  transform: translateX(-5px);
-  background: white;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .iform-progress {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .progress-bar-bg {
-  height: 8px;
-  border-radius: 4px;
+  height: 12px;
+  border-radius: 6px;
+  padding: 2px;
   overflow: hidden;
-  position: relative;
 }
 
 .progress-bar-fill {
-  position: absolute;
-  inset: 0;
+  height: 100%;
   background: linear-gradient(90deg, var(--ideate) 0%, var(--prototype) 100%);
+  border-radius: 4px;
 }
 
 .step-count {
   font-size: 12px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-weight: 900;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
 }
 
 .iform-card {
-  border-radius: var(--radius-xl);
-  min-height: 500px;
+  border-radius: var(--radius-2xl);
+  min-height: 550px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
 }
 
 .step-content {
-  padding: 60px 60px 40px;
+  padding: 80px 80px 40px;
   flex: 1;
 }
 
 .step-title {
-  font-size: 32px;
-  font-weight: 800;
+  font-size: 40px;
+  font-weight: 950;
   color: var(--text-primary);
-  margin-bottom: 32px;
-  letter-spacing: -0.5px;
-}
-
-.field-group {
-  display: flex;
-  flex-direction: column;
+  margin-bottom: 40px;
+  letter-spacing: -2px;
+  line-height: 0.95;
 }
 
 .glass-input {
-  background: rgba(255, 255, 255, 0.5) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  font-size: 18px !important;
-  padding: 20px 24px !important;
-  border-radius: var(--radius-lg) !important;
+  background: rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid var(--glass-border) !important;
+  font-size: 20px !important;
+  padding: 24px 32px !important;
+  border-radius: var(--radius-xl) !important;
   transition: var(--transition-smooth) !important;
 }
 
 .glass-input:focus {
-  background: rgba(255, 255, 255, 0.8) !important;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md) !important;
-}
-
-.field-textarea {
-  min-height: 200px;
-  resize: none;
+  background: white !important;
+  border-color: var(--prototype) !important;
+  box-shadow: 0 0 0 4px rgba(91, 127, 176, 0.1) !important;
 }
 
 /* MCQ GRID */
 .mcq-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 20px;
 }
 
 .mcq-card {
+  background: white;
+  padding: 32px 20px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 24px 16px;
-  border-radius: var(--radius-lg);
-  border: 2px solid transparent;
-  cursor: pointer;
+  gap: 16px;
   transition: var(--transition-smooth);
-  background: var(--bg-secondary);
 }
 
 .mcq-card:hover {
-  transform: translateY(-5px) scale(1.02);
-  border-color: rgba(255, 255, 255, 0.5);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--prototype);
 }
 
 .mcq-card.active {
-  background: white;
-  border-color: var(--prototype);
-  box-shadow: var(--shadow-lg);
+  background: var(--prototype);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 20px 40px rgba(91, 127, 176, 0.3);
 }
 
-.mcq-icon { font-size: 32px; }
-.mcq-label { font-size: 14px; font-weight: 700; color: var(--text-primary); text-align: center; }
+.mcq-icon { font-size: 40px; }
+.mcq-label { font-size: 14px; font-weight: 800; }
+.mcq-card.active .mcq-label { color: white; }
 
 /* MCQ COLUMN */
 .mcq-column {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .mcq-row {
+  background: white;
+  padding: 24px 32px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 20px 24px;
-  border-radius: var(--radius-lg);
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-  background: var(--bg-secondary);
   text-align: left;
+  transition: var(--transition-smooth);
 }
 
 .mcq-row:hover {
-  transform: translateX(5px);
-  background: white;
+  transform: translateX(10px);
+  border-color: var(--prototype);
 }
 
 .mcq-row.active {
-  background: white;
-  border-color: var(--prototype);
-  box-shadow: var(--shadow-md);
+  background: var(--prototype);
+  border-color: transparent;
 }
 
-.mcq-row-label { font-size: 18px; font-weight: 800; color: var(--text-primary); }
-.mcq-row-desc { font-size: 13px; color: var(--text-muted); }
+.mcq-row.active .mcq-row-label,
+.mcq-row.active .mcq-row-desc {
+  color: white;
+}
+
+.mcq-row-label { font-size: 20px; font-weight: 900; color: var(--text-primary); }
+.mcq-row-desc { font-size: 14px; color: var(--text-muted); }
 
 /* UPLOAD */
 .upload-zone {
-  min-height: 300px;
-  border-radius: var(--radius-xl);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-}
-
-.upload-zone:hover {
-  background: rgba(255, 255, 255, 0.4);
-}
-
-.upload-icon { font-size: 64px; }
-
-.upload-preview {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  padding: 10px;
-}
-
-.upload-preview img {
-  width: 100%;
-  height: 280px;
-  object-fit: cover;
-  border-radius: var(--radius-lg);
-}
-
-.remove-btn {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  padding: 8px 16px;
-  background: rgba(0,0,0,0.6);
-  color: white;
-  border-radius: var(--radius-full);
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
+  min-height: 320px;
+  border-radius: var(--radius-2xl);
 }
 
 /* FOOTER */
 .iform-footer {
-  padding: 40px 60px;
-  display: flex;
-  justify-content: flex-end;
+  padding: 50px 80px;
+  background: rgba(255, 255, 255, 0.3);
+  border-top: 1px solid var(--glass-border);
 }
 
 .next-btn {
-  padding: 18px 48px;
+  padding: 20px 60px;
   border-radius: var(--radius-full);
-  background: var(--text-primary);
-  color: white;
-  font-weight: 800;
+  font-weight: 900;
   font-size: 18px;
-  border: none;
-  cursor: pointer;
-  transition: var(--transition-smooth);
+  box-shadow: var(--shadow-lg);
 }
 
 .next-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-lg);
-  background: #2d2d4e;
-}
-
-.error-msg {
-  color: #e53e3e;
-  font-size: 14px;
-  font-weight: 600;
-  margin-top: 12px;
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-xl);
 }
 
 @media (max-width: 768px) {
   .step-content { padding: 40px 24px; }
-  .iform-footer { padding: 24px; }
-  .step-title { font-size: 24px; }
+  .iform-footer { padding: 30px 24px; }
+  .step-title { font-size: 32px; }
   .mcq-grid { grid-template-columns: repeat(2, 1fr); }
 }
-
-.mt-4 { margin-top: 16px; }
