@@ -3,19 +3,23 @@ import { motion } from 'framer-motion'
 import './LandingPage.css'
 
 const PHASES = [
-  { name: 'Empathize', emoji: '🤝', color: '#FFD966', description: 'Understand users deeply' },
-  { name: 'Define', emoji: '🎯', color: '#FF9B85', description: 'Clarify the problem' },
-  { name: 'Ideate', emoji: '💡', color: '#E975BA', description: 'Generate bold ideas' },
-  { name: 'Prototype', emoji: '🛠️', color: '#5B7FB0', description: 'Build & validate' },
-  { name: 'Test', emoji: '✓', color: '#4DBFB5', description: 'Validate assumptions' },
-  { name: 'Refine', emoji: '🔄', color: '#A8B5C4', description: 'Iterate & improve' },
+  { name: 'Problem Definition', emoji: '🎯', color: '#6366F1', description: 'Deep context scoping' },
+  { name: 'Research & Discovery', emoji: '🔍', color: '#3B82F6', description: 'Market & user audit' },
+  { name: 'User Segmentation', emoji: '👥', color: '#06B6D4', description: 'Audience architecting' },
+  { name: 'Journey Mapping', emoji: '🗺️', color: '#10B981', description: 'Experience detailing' },
+  { name: 'Ideation & Strategy', emoji: '💡', color: '#F59E0B', description: 'Feature ecosystem' },
+  { name: 'Wireframing', emoji: '🎨', color: '#EF4444', description: 'Visual blueprinting' },
+  { name: 'Tech Ecosystem', emoji: '⚙️', color: '#8B5CF6', description: 'Infrastructure design' },
+  { name: 'Business Model', emoji: '💰', color: '#EC4899', description: 'Revenue & viability' },
+  { name: 'Testing & Validation', emoji: '🧪', color: '#14B8A6', description: 'Hypothesis audit' },
+  { name: 'Final Refinement', emoji: '🚀', color: '#4338CA', description: 'Ready for market' },
 ]
 
 const BENEFITS = [
-  { icon: '⚡', title: 'AI-Powered Analysis', description: 'Instantly generate comprehensive insights based on proven Design Thinking methodology' },
-  { icon: '🎨', title: 'Beautiful Reports', description: 'Receive stunning, visual reports that make your analysis easy to share and understand' },
-  { icon: '🚀', title: 'Actionable Insights', description: 'Every phase ends with concrete next steps, not just abstract ideas' },
-  { icon: '📊', title: 'Data-Driven', description: 'KPIs, metrics, and validation frameworks grounded in real-world experience' },
+  { icon: '🤖', title: 'Gemini 1.5 Analysis', description: 'Powered by advanced reasoning to generate deep, multi-phase strategic reports' },
+  { icon: '📐', title: '11-Step Deep Flow', description: 'Collect comprehensive product context through a guided architectural stepper' },
+  { icon: '💎', title: '3D Glassmorphism', description: 'A futuristic interface with neumorphic depth and smooth micro-interactions' },
+  { icon: '📄', title: 'PDF Export Engine', description: 'Generate professional, multi-page strategy documents ready for presentation' },
 ]
 
 export default function LandingPage({ onStart }) {
@@ -24,7 +28,7 @@ export default function LandingPage({ onStart }) {
   useEffect(() => {
     const interval = setInterval(() => {
       setActivePhase(prev => (prev + 1) % PHASES.length)
-    }, 2500)
+    }, 2000)
     return () => clearInterval(interval)
   }, [])
 
@@ -35,11 +39,11 @@ export default function LandingPage({ onStart }) {
         <div className="container">
           <div className="nav-inner">
             <div className="nav-logo">
-              <span className="logo-icon">◎</span>
-              <span className="logo-text">ThinkLens</span>
+              <span className="logo-icon" style={{ color: '#2563EB' }}>◎</span>
+              <span className="logo-text">ThinkLens Pro</span>
             </div>
             <button className="dash-btn nm-flat" onClick={onStart}>
-              Start Exploration ↗
+              Launch Analyzer ↗
             </button>
           </div>
         </div>
@@ -56,24 +60,24 @@ export default function LandingPage({ onStart }) {
               transition={{ duration: 0.8 }}
             >
               <div className="hero-badge nm-inset">
-                <span className="badge-dot"></span>
-                Next-Gen Design Strategy
+                <span className="badge-dot" style={{ background: '#2563EB' }}></span>
+                10-Phase Design Modernization (DTIM-10)
               </div>
               <h1 className="hero-title">
-                Immersive<br />
-                <span className="hero-title-gradient">3D Design Thinking</span>
+                Architectural<br />
+                <span className="hero-title-gradient">Product Strategy</span>
               </h1>
               <p className="hero-subtitle">
-                Experience your product's journey through a high-fidelity, AI-powered 3D lens. From empathy to refinement, we guide you through a premium architectural analysis.
+                Experience the next evolution of Design Thinking. Transform your vision into a comprehensive 10-phase strategic roadmap with our AI-powered 3D engine.
               </p>
               <div className="hero-actions">
                 <button className="dash-big-btn nm-flat" onClick={onStart}>
-                  Analyze New Product
+                  Analyze New Project
                 </button>
                 <div className="hero-stats-mini">
-                  <div className="stat-item"><strong>6</strong> Phases</div>
-                  <div className="stat-item"><strong>3D</strong> Results</div>
-                  <div className="stat-item"><strong>Free</strong> Always</div>
+                  <div className="stat-item"><strong>10</strong> Phases</div>
+                  <div className="stat-item"><strong>11</strong> Steps</div>
+                  <div className="stat-item"><strong>3D</strong> Depth</div>
                 </div>
               </div>
             </motion.div>
@@ -87,6 +91,9 @@ export default function LandingPage({ onStart }) {
               <div className="hero-card-stack">
                 {PHASES.map((phase, i) => {
                   const isActive = activePhase === i
+                  const isVisible = Math.abs(i - activePhase) < 3 || (activePhase > PHASES.length - 3 && i < 2)
+                  if (!isVisible && !isActive) return null
+
                   return (
                     <motion.div
                        key={phase.name}
@@ -96,16 +103,16 @@ export default function LandingPage({ onStart }) {
                          '--phase-color': phase.color 
                        }}
                        animate={{ 
-                         x: isActive ? 0 : (i - activePhase) * 15,
-                         y: isActive ? 0 : (i - activePhase) * 10,
-                         scale: isActive ? 1 : 0.9,
-                         opacity: isActive ? 1 : 0.3,
-                         rotateZ: isActive ? 0 : (i - activePhase) * 2
+                         x: isActive ? 0 : (i - activePhase) * 20,
+                         y: isActive ? 0 : (i - activePhase) * 15,
+                         scale: isActive ? 1.1 : 0.8,
+                         opacity: isActive ? 1 : 0.2,
+                         rotateZ: isActive ? 0 : (i - activePhase) * 5
                        }}
                        transition={{ duration: 0.8, type: 'spring' }}
                     >
                        <div className="layered-header">
-                         <span className="layered-emoji">{phase.emoji}</span>
+                         <div className="layered-icon-circle" style={{ background: phase.color }}>{phase.emoji}</div>
                          <span className="layered-name">{phase.name}</span>
                        </div>
                        <div className="layered-desc">{phase.description}</div>
@@ -146,10 +153,10 @@ export default function LandingPage({ onStart }) {
         <div className="container">
           <div className="footer-inner">
             <div className="nav-logo">
-              <span className="logo-icon">◎</span>
-              <span className="logo-text">ThinkLens 3D</span>
+              <span className="logo-icon" style={{ color: '#2563EB' }}>◎</span>
+              <span className="logo-text">ThinkLens Pro</span>
             </div>
-            <p className="footer-copy">© 2026 ThinkLens · Built for the Future of Design</p>
+            <p className="footer-copy">© 2026 ThinkLens AI · The Standard for Product Innovation</p>
           </div>
         </div>
       </footer>
