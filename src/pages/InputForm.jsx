@@ -1,3 +1,26 @@
+import { useState, useRef, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import './InputForm.css'
+
+const CATEGORIES = [
+  { id: 'electronics', label: 'Electronics & Hardware', icon: '💻' },
+  { id: 'software', label: 'Software & SaaS', icon: '☁️' },
+  { id: 'mobile', label: 'Mobile App', icon: '📱' },
+  { id: 'ecommerce', label: 'E-commerce & Retail', icon: '🛒' },
+  { id: 'health', label: 'Health & Wellness', icon: '🧘' },
+  { id: 'edu', label: 'Education & EdTech', icon: '🎓' },
+  { id: 'fintech', label: 'FinTech & Finance', icon: '💰' },
+  { id: 'ai', label: 'AI & Machine Learning', icon: '🤖' },
+  { id: 'other', label: 'Other', icon: '✨' }
+]
+
+const STAGES = [
+  { value: 'concept', label: '💭 Concept', description: 'Just an idea in the works' },
+  { value: 'prototype', label: '🔧 Prototype', description: 'Early version being built' },
+  { value: 'mvp', label: '🚀 MVP', description: 'Minimum viable product ready' },
+  { value: 'growth', label: '📈 Scaling', description: 'Growing and expanding' },
+]
+
 const PRODUCT_GOALS = [
   { id: 'efficiency', label: 'Improve Efficiency', emoji: '⚙️' },
   { id: 'ux', label: 'Better User Experience', emoji: '✨' },
@@ -31,7 +54,20 @@ export default function InputForm({ onSubmit, onBack }) {
   const [dragOver, setDragOver] = useState(false)
   const fileRef = useRef()
 
-  // ... (persistence logic stays same)
+  useEffect(() => {
+    const saved = localStorage.getItem('dt_form_draft')
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        setForm(prev => ({ ...prev, ...parsed, image: null, imagePreview: null }))
+      } catch (e) { console.error('Failed to load draft', e) }
+    }
+  }, [])
+
+  useEffect(() => {
+    const { image, imagePreview, ...rest } = form
+    localStorage.setItem('dt_form_draft', JSON.stringify(rest))
+  }, [form])
 
   const validateStep = (s) => {
     const e = {}
@@ -43,7 +79,28 @@ export default function InputForm({ onSubmit, onBack }) {
     return Object.keys(e).length === 0
   }
 
-  // ... (handleNext, handlePrev logic same)
+  const handleNext = () => {
+    if (validateStep(step)) {
+      if (step < 6) setStep(step + 1)
+      else handleSubmit()
+    }
+  }
+
+  const handlePrev = () => {
+    if (step > 1) setStep(step - 1)
+    else onBack()
+  }
+
+  const handleSubmit = (e) => {
+    if (e) e.preventDefault()
+    onSubmit(form)
+    localStorage.removeItem('dt_form_draft')
+  }
+
+  const handleChange = (field, value) => {
+    setForm(prev => ({ ...prev, [field]: value }))
+    if (errors[field]) setErrors(prev => ({ ...prev, [field]: null }))
+  }
 
   const handleToggleMarket = (val) => {
     setForm(prev => {
@@ -55,8 +112,21 @@ export default function InputForm({ onSubmit, onBack }) {
     })
   }
 
+  const handleImageDrop = (e) => {
+    e.preventDefault()
+    setDragOver(false)
+    const file = e.dataTransfer?.files?.[0] || e.target?.files?.[0]
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        setForm(prev => ({ ...prev, image: file, imagePreview: ev.target.result }))
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   return (
-    <div className="iform-page nm-bg">
+    <div className="iform-page">
       <div className="iform-bg">
         <div className="bg-blob bg-blob-1"></div>
         <div className="bg-blob bg-blob-2"></div>
@@ -126,6 +196,7 @@ export default function InputForm({ onSubmit, onBack }) {
                     value={form.description}
                     onChange={e => handleChange('description', e.target.value)}
                   />
+                  {errors.goal && <p className="error-msg">{errors.goal}</p>}
                 </div>
               )}
 
@@ -144,6 +215,7 @@ export default function InputForm({ onSubmit, onBack }) {
                       </button>
                     ))}
                   </div>
+                  {errors.category && <p className="error-msg">{errors.category}</p>}
                 </div>
               )}
 
@@ -162,6 +234,7 @@ export default function InputForm({ onSubmit, onBack }) {
                       </button>
                     ))}
                   </div>
+                  {errors.currentStage && <p className="error-msg">{errors.currentStage}</p>}
                 </div>
               )}
 
@@ -211,7 +284,7 @@ export default function InputForm({ onSubmit, onBack }) {
             </motion.div>
           </AnimatePresence>
 
-          <div className="iform-footer glass">
+          <div className="iform-footer">
             <button className="next-btn nm-flat" onClick={handleNext}>
               {step === 6 ? 'LAUNCH 3D ANALYSIS' : 'CONTINUE →'}
             </button>
