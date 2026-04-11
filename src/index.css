@@ -21,18 +21,28 @@
   --refine-dark: #7A8FA2;
   --refine-light: #E8EDF2;
 
-  /* Base Colors */
-  --bg-primary: #D4E5F0;
-  --bg-secondary: #E8F2F8;
-  --bg-card: #FFFFFF;
-  --text-primary: #1A1A2E;
+  /* Base Colors - Premium Dark & Light Blend */
+  --bg-primary: #F0F4F8;
+  --bg-secondary: #E2E8F0;
+  --bg-card: rgba(255, 255, 255, 0.7);
+  --glass-bg: rgba(255, 255, 255, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  
+  --text-primary: #1A202C;
   --text-secondary: #4A5568;
   --text-muted: #718096;
-  --border-color: rgba(26, 26, 46, 0.08);
-  --shadow-sm: 0 2px 8px rgba(26, 26, 46, 0.06);
-  --shadow-md: 0 8px 24px rgba(26, 26, 46, 0.10);
-  --shadow-lg: 0 20px 48px rgba(26, 26, 46, 0.15);
-  --shadow-xl: 0 32px 64px rgba(26, 26, 46, 0.20);
+  
+  /* Neumorphism Tokens */
+  --nm-shadow-out: 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff;
+  --nm-shadow-in: inset 2px 2px 5px #d1d9e6, inset -5px -5px 10px #ffffff;
+  --nm-bg: #e0e5ec;
+
+  /* 3D Depth Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.12);
+  --shadow-3d: 0 15px 35px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.07);
 
   /* Spacing */
   --radius-sm: 8px;
@@ -40,6 +50,10 @@
   --radius-lg: 24px;
   --radius-xl: 32px;
   --radius-full: 9999px;
+
+  /* Presets */
+  --glass-fx: saturate(180%) blur(12px);
+  --transition-smooth: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 *, *::before, *::after {
@@ -131,6 +145,36 @@ input, textarea, select {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
+}
+
+/* Glassmorphism Utility */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-fx);
+  -webkit-backdrop-filter: var(--glass-fx);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Neumorphism Utility */
+.nm-flat {
+  background: var(--nm-bg);
+  box-shadow: var(--nm-shadow-out);
+}
+
+.nm-inset {
+  background: var(--nm-bg);
+  box-shadow: var(--nm-shadow-in);
+}
+
+/* 3D Depth Utility */
+.depth-3d {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.depth-layer {
+  transform: translateZ(20px);
 }
 
 /* Animations */

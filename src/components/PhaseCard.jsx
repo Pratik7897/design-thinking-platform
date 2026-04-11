@@ -381,111 +381,110 @@ const CONTENT_COMPONENTS = {
   refine: RefineContent,
 }
 
-export default function PhaseCard({ phaseKey, phase, index, isHighlighted, onActivate }) {
-  const [expanded, setExpanded] = useState(false)
+export default function PhaseCard({ phaseKey, phase, index, isHighlighted, onActivate, isImmersive }) {
+  const [expanded, setExpanded] = useState(isImmersive)
   const ContentComponent = CONTENT_COMPONENTS[phaseKey]
 
   const toggleExpand = () => {
+    if (isImmersive) return // Always expanded in immersive mode
     setExpanded(prev => !prev)
-    if (!expanded) onActivate()
+    if (!expanded && onActivate) onActivate()
   }
 
   return (
     <motion.article
-      className={`phase-card ${isHighlighted ? 'phase-card--highlighted' : ''}`}
+      className={`phase-card glass depth-3d ${isHighlighted ? 'phase-card--highlighted' : ''} ${isImmersive ? 'phase-card--immersive' : ''}`}
       style={{ '--phase-primary': phase.primary, '--phase-light': phase.light, '--phase-text': phase.text }}
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.08 }}
-      whileHover={{ y: expanded ? 0 : -4, boxShadow: '0 20px 48px rgba(26,26,46,0.15)' }}
-      aria-label={`Phase ${index + 1}: ${phase.title}`}
+      whileHover={{ y: expanded ? 0 : -10, rotateX: 2, rotateY: -2 }}
     >
-      {/* Phase Header */}
-      <div
-        className="phase-card-header"
-        style={{ background: phase.primary }}
-        onClick={toggleExpand}
-        role="button"
-        tabIndex={0}
-        aria-expanded={expanded}
-        onKeyDown={e => e.key === 'Enter' && toggleExpand()}
-      >
-        <div className="pch-left">
-          <div className="phase-number">Phase {String(index + 1).padStart(2, '0')}</div>
-          <div className="phase-emoji">{phase.emoji}</div>
-          <h3 className="phase-title">{phase.title.toUpperCase()}</h3>
-        </div>
-        <motion.div
-          className="expand-icon"
-          animate={{ rotate: expanded ? 180 : 0 }}
-          transition={{ duration: 0.3 }}
+      <div className="phase-card-inner-3d">
+        {/* Phase Header */}
+        <div
+          className="phase-card-header depth-layer"
+          style={{ background: phase.primary }}
+          onClick={toggleExpand}
+          role="button"
+          tabIndex={0}
+          aria-expanded={expanded}
         >
-          ▾
-        </motion.div>
-      </div>
+          <div className="pch-left">
+            <div className="phase-number nm-inset">Phase {String(index + 1).padStart(2, '0')}</div>
+            <div className="phase-emoji animate-float">{phase.emoji}</div>
+            <h3 className="phase-title">{phase.title.toUpperCase()}</h3>
+          </div>
+          {!isImmersive && (
+            <motion.div
+              className="expand-icon"
+              animate={{ rotate: expanded ? 180 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              ▾
+            </motion.div>
+          )}
+        </div>
 
-      {/* Tagline */}
-      <div className="phase-card-tagline">
-        <p>{phase.tagline}</p>
-      </div>
+        {/* Tagline */}
+        <div className="phase-card-tagline depth-layer">
+          <p className="nm-inset">"{phase.tagline}"</p>
+        </div>
 
-      {/* Key Insights (always visible) */}
-      <div className="key-insights">
-        <div className="ki-header">KEY INSIGHTS</div>
-        <ul className="ki-list">
-          {(phase.keyInsights || []).slice(0, expanded ? 5 : 3).map((insight, i) => (
-            <li key={i} className="ki-item">
-              <span className="ki-dot" style={{ background: phase.primary }}></span>
-              <span>{insight}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+        <div className="phase-body-scrollable custom-scrollbar">
+          {/* Key Insights */}
+          <div className="key-insights depth-layer">
+            <div className="ki-header">KEY INSIGHTS</div>
+            <ul className="ki-list">
+              {(phase.keyInsights || []).map((insight, i) => (
+                <li key={i} className="ki-item nm-flat">
+                  <span className="ki-dot" style={{ background: phase.primary }}></span>
+                  <span>{insight}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-      {/* Expandable Content */}
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            className="phase-expanded"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.4, ease: 'easeInOut' }}
-            style={{ overflow: 'hidden' }}
-          >
-            <div className="phase-expanded-inner">
-              {ContentComponent && <ContentComponent phase={phase} />}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          {/* Expandable Content */}
+          <div className={`phase-expanded ${isImmersive ? 'always-visible' : ''}`}>
+            {(expanded || isImmersive) && (
+              <div className="phase-expanded-inner depth-layer">
+                {ContentComponent && <ContentComponent phase={phase} />}
+              </div>
+            )}
+          </div>
 
-      {/* Action Items */}
-      <div className="action-items">
-        <div className="ai-header">ACTION ITEMS</div>
-        {(phase.actionItems || []).map((item, i) => (
-          <div key={i} className="ai-item">
-            <span className="ai-arrow">→</span>
-            <div>
-              <span className="ai-action">{item.action}</span>
-              <span className="ai-timeline"> [{item.timeline}]</span>
+          {/* Action Items */}
+          <div className="action-items depth-layer">
+            <div className="ai-header">DRIVING ACTION</div>
+            <div className="ai-grid">
+              {(phase.actionItems || []).map((item, i) => (
+                <div key={i} className="ai-item nm-flat">
+                  <span className="ai-arrow">🚀</span>
+                  <div>
+                    <span className="ai-action">{item.action}</span>
+                    <span className="ai-timeline"> • {item.timeline}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
+        </div>
 
-      {/* Card Footer */}
-      <div className="phase-card-footer">
-        <button
-          className="expand-btn"
-          style={{ '--phase-primary': phase.primary }}
-          onClick={toggleExpand}
-          aria-label={expanded ? 'Collapse detailed analysis' : 'Expand detailed analysis'}
-        >
-          {expanded ? '⬆ Collapse Analysis' : '⬇ Expand Full Analysis'}
-        </button>
-        {index < 5 && (
-          <span className="next-phase-hint">Next: {['Define', 'Ideate', 'Prototype', 'Test', 'Refine'][index]} →</span>
+        {/* Card Footer - Only show if not immersive or needs toggle */}
+        {!isImmersive && (
+          <div className="phase-card-footer depth-layer">
+            <button
+              className="expand-btn nm-flat"
+              style={{ '--phase-primary': phase.primary }}
+              onClick={toggleExpand}
+            >
+              {expanded ? '⬆ Collapse Analysis' : '⬇ View Full Analysis'}
+            </button>
+            {index < 5 && (
+              <span className="next-phase-hint">Next: {['Define', 'Ideate', 'Prototype', 'Test', 'Refine'][index]} →</span>
+            )}
+          </div>
         )}
       </div>
     </motion.article>

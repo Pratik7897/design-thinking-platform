@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import jsPDF from 'jspdf'
 
@@ -9,12 +9,22 @@ import './Dashboard.css'
 const PHASE_KEYS = ['empathize', 'define', 'ideate', 'prototype', 'test', 'refine']
 
 export default function Dashboard({ analysis, productData, onNewAnalysis }) {
-  const [activePhase, setActivePhase] = useState(null)
+  const [activePhaseIndex, setActivePhaseIndex] = useState(0)
   const [exporting, setExporting] = useState(false)
   const reportRef = useRef()
 
   const phases = analysis.phases
   const meta = analysis.metadata
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowRight' && activePhaseIndex < PHASE_KEYS.length - 1) setActivePhaseIndex(prev => prev + 1)
+      if (e.key === 'ArrowLeft' && activePhaseIndex > 0) setActivePhaseIndex(prev => prev - 1)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [activePhaseIndex])
 
   const handleExport = async () => {
     setExporting(true)
@@ -107,14 +117,14 @@ export default function Dashboard({ analysis, productData, onNewAnalysis }) {
     }
   }
 
+  const activePhaseKey = PHASE_KEYS[activePhaseIndex]
+
   return (
-    <div className="dashboard">
-      {/* Header */}
+    <div className="dashboard nm-bg">
       <motion.header
-        className="dash-header"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        className="dash-header glass"
+        initial={{ y: -50 }}
+        animate={{ y: 0 }}
       >
         <div className="container">
           <div className="dash-header-inner">
@@ -123,93 +133,94 @@ export default function Dashboard({ analysis, productData, onNewAnalysis }) {
               <span className="logo-text">ThinkLens</span>
             </div>
             <div className="dash-product-info">
-              <span className="dash-product-badge">{meta.category}</span>
+              <span className="dash-product-badge nm-flat">{meta.category}</span>
               <h2 className="dash-product-name">{meta.productName}</h2>
-              <span className="dash-product-stage">Stage: {meta.currentStage}</span>
             </div>
             <div className="dash-actions">
-              <button
-                className="dash-btn dash-btn-outline"
-                onClick={handleExport}
-                disabled={exporting}
-                aria-label="Export as PDF"
-              >
-                {exporting ? '⏳ Exporting...' : '📄 Export PDF'}
+              <button className="dash-btn glass" onClick={handleExport} disabled={exporting}>
+                {exporting ? 'Exporting...' : '📄 PDF'}
               </button>
-              <button
-                className="dash-btn dash-btn-primary"
-                onClick={onNewAnalysis}
-                aria-label="Start new analysis"
-              >
-                + New Analysis
+              <button className="dash-btn nm-flat" onClick={onNewAnalysis}>
+                + New
               </button>
             </div>
           </div>
         </div>
       </motion.header>
 
-      {/* Main Content */}
-      <main className="dash-main" ref={reportRef}>
-        <div className="container">
-          {/* Circular Overview */}
-          <motion.section
-            className="dash-overview"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            <CircularNav
-              phases={PHASE_KEYS.map(k => phases[k])}
-              activePhase={activePhase}
-              onPhaseClick={setActivePhase}
-            />
+      <main className="dash-main">
+        <div className="container overflow-visible">
+          {/* Immersive Phase Display */}
+          <section className="phases-immersive-container">
+            <div className="carousel-nav-wrapper">
+              <CircularNav
+                phases={PHASE_KEYS.map(k => phases[k])}
+                activePhase={activePhaseIndex}
+                onPhaseClick={setActivePhaseIndex}
+              />
+            </div>
 
-            <div className="overview-summary">
-              <h1 className="overview-title">Design Thinking Analysis</h1>
-              <p className="overview-subtitle">
-                A comprehensive {PHASE_KEYS.length}-phase analysis for <strong>{meta.productName}</strong>.
-                Explore each phase below or click a phase in the diagram.
-              </p>
-              {productData?.image && (
-                <div className="product-image-wrap">
-                  <img src={productData.imagePreview} alt={`${meta.productName} product image`} className="product-thumb" />
+            <div className="carousel-main">
+              <div className="carousel-controls">
+                <button 
+                  className={`carousel-arrow nm-flat ${activePhaseIndex === 0 ? 'disabled' : ''}`}
+                  onClick={() => activePhaseIndex > 0 && setActivePhaseIndex(prev => prev - 1)}
+                >
+                  ←
+                </button>
+                <div className="carousel-indicators">
+                   {PHASE_KEYS.map((_, i) => (
+                     <div 
+                       key={i} 
+                       className={`indicator ${i === activePhaseIndex ? 'indicator-active' : ''}`}
+                       onClick={() => setActivePhaseIndex(i)}
+                     />
+                   ))}
                 </div>
-              )}
-              <div className="overview-tags">
-                {['User Personas', 'Pain Points', 'Problem Statement', 'Feature Ideas', 'MVP Plan', 'Testing Framework', 'Growth Strategy'].map(tag => (
-                  <span key={tag} className="overview-tag">{tag}</span>
-                ))}
+                <button 
+                  className={`carousel-arrow nm-flat ${activePhaseIndex === PHASE_KEYS.length - 1 ? 'disabled' : ''}`}
+                  onClick={() => activePhaseIndex < PHASE_KEYS.length - 1 && setActivePhaseIndex(prev => prev + 1)}
+                >
+                  →
+                </button>
+              </div>
+
+              <div className="carousel-card-viewport depth-3d">
+                <AnimatePresence mode="wait" custom={activePhaseIndex}>
+                  <motion.div
+                    key={activePhaseKey}
+                    className="carousel-card-wrap"
+                    initial={{ opacity: 0, rotateY: 90, scale: 0.8, x: 100 }}
+                    animate={{ opacity: 1, rotateY: 0, scale: 1, x: 0 }}
+                    exit={{ opacity: 0, rotateY: -90, scale: 0.8, x: -100 }}
+                    transition={{ duration: 0.6, type: 'spring', damping: 20 }}
+                  >
+                    <PhaseCard
+                      phaseKey={activePhaseKey}
+                      phase={phases[activePhaseKey]}
+                      index={activePhaseIndex}
+                      isHighlighted={true}
+                      isImmersive={true}
+                    />
+                  </motion.div>
+                </AnimatePresence>
               </div>
             </div>
-          </motion.section>
-
-          {/* Phase Cards Grid */}
-          <section className="phases-grid" id="phases">
-            {PHASE_KEYS.map((key, i) => (
-              <PhaseCard
-                key={key}
-                phaseKey={key}
-                phase={phases[key]}
-                index={i}
-                isHighlighted={activePhase === i}
-                onActivate={() => setActivePhase(activePhase === i ? null : i)}
-              />
-            ))}
           </section>
 
-          {/* Bottom Actions */}
+          {/* Bottom Summary */}
           <motion.div
-            className="dash-bottom-actions"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
+            className="dash-summary-footer glass"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
           >
-            <button className="dash-big-btn" onClick={handleExport} disabled={exporting}>
-              <span>{exporting ? '⏳ Generating PDF...' : '📄 Download Full Report'}</span>
-            </button>
-            <button className="dash-big-btn dash-big-btn-outline" onClick={onNewAnalysis}>
-              <span>+ Analyze Another Product</span>
-            </button>
+            <div className="summary-left">
+              <p>Completed 3D analysis for <strong>{meta.productName}</strong> 🎉</p>
+            </div>
+            <div className="summary-right">
+              <button className="dash-big-btn nm-flat" onClick={handleExport}>Download Full 3D Report</button>
+            </div>
           </motion.div>
         </div>
       </main>

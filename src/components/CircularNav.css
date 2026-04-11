@@ -1,23 +1,35 @@
-.circular-nav {
+.circular-nav-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-shrink: 0;
+  padding: 20px;
+  position: relative;
+}
+
+.circular-nav-svg {
+  overflow: visible;
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.1));
+}
+
+.cn-inner-disc {
+  stroke: var(--glass-border);
+  stroke-width: 1px;
 }
 
 .cn-center-text {
   font-family: 'Poppins', sans-serif;
   font-weight: 900;
-  font-size: 14px;
+  font-size: 16px;
   fill: var(--text-primary);
-  letter-spacing: -0.3px;
+  letter-spacing: 1px;
 }
 
-.cn-center-subtext {
-  font-family: 'Inter', sans-serif;
-  font-size: 8px;
-  fill: var(--text-muted);
-  font-weight: 500;
+.cn-node-circle {
+  transition: var(--transition-smooth);
+}
+
+.cn-node-circle.active {
+  filter: drop-shadow(0 8px 16px currentColor);
 }
 
 .cn-node-emoji {
@@ -26,16 +38,23 @@
   pointer-events: none;
 }
 
-.cn-phase-label {
+.cn-label {
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
+  font-size: 9px;
   fill: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  transition: all 0.3s;
+  letter-spacing: 1px;
+  transition: var(--transition-smooth);
+  pointer-events: none;
 }
 
-.cn-phase-label--active {
+.cn-label.active {
   fill: var(--text-primary);
-  font-weight: 800;
+  font-weight: 900;
+  transform: translateY(-2px);
+}
+
+.cn-node-group:hover .cn-label {
+  fill: var(--text-primary);
+  opacity: 1;
 }
