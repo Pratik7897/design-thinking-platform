@@ -1,14 +1,11 @@
 import { motion } from 'framer-motion'
 import './CircularNav.css'
 
-const PHASE_LABELS = ['Empathize', 'Define', 'Ideate', 'Prototype', 'Test', 'Refine']
-const PHASE_EMOJIS = ['🤝', '🎯', '💡', '🛠️', '✓', '🔄']
-
 export default function CircularNav({ phases, activePhase, onPhaseClick }) {
-  const size = 320
+  const size = 360
   const cx = size / 2
   const cy = size / 2
-  const r = 110
+  const r = 130
 
   return (
     <div className="circular-nav-container depth-3d">
@@ -30,19 +27,19 @@ export default function CircularNav({ phases, activePhase, onPhaseClick }) {
                key={`glow-${i}`}
                cx={gpx}
                cy={gpy}
-               r="30"
+               r="35"
                fill={phase.primary}
                initial={{ opacity: 0, scale: 0.5 }}
-               animate={{ opacity: 0.4, scale: 1.2 }}
-               style={{ filter: 'blur(15px)' }}
+               animate={{ opacity: 0.4, scale: 1.4 }}
+               style={{ filter: 'blur(20px)' }}
              />
            )
         })}
 
         {/* Center */}
-        <circle cx={cx} cy={cy} r={r * 0.4} className="cn-inner-disc glass" />
-        <text x={cx} y={cy - 5} textAnchor="middle" className="cn-center-text">3D</text>
-        <text x={cx} y={cy + 15} textAnchor="middle" className="cn-center-text">FLOW</text>
+        <circle cx={cx} cy={cy} r={r * 0.35} className="cn-inner-disc glass" />
+        <text x={cx} y={cy - 5} textAnchor="middle" className="cn-center-text" style={{ fontSize: '10px' }}>10-PHASE</text>
+        <text x={cx} y={cy + 15} textAnchor="middle" className="cn-center-text" style={{ fontSize: '14px', fontWeight: 900 }}>DTIM</text>
 
         {/* Arcs */}
         {phases.map((phase, i) => {
@@ -63,7 +60,7 @@ export default function CircularNav({ phases, activePhase, onPhaseClick }) {
               stroke={phase.primary}
               strokeWidth="2"
               strokeDasharray="4,4"
-              opacity="0.2"
+              opacity="0.15"
             />
           )
         })}
@@ -86,36 +83,41 @@ export default function CircularNav({ phases, activePhase, onPhaseClick }) {
               <motion.circle
                 cx={npx}
                 cy={npy}
-                r={isActive ? 24 : 18}
+                r={isActive ? 22 : 16}
                 className={`cn-node-circle nm-flat ${isActive ? 'active' : ''}`}
                 fill={isActive ? phase.primary : 'white'}
                 stroke={isActive ? 'white' : phase.primary}
                 strokeWidth={isActive ? 3 : 1}
-                animate={{ scale: isActive ? 1.1 : 1, r: isActive ? 24 : 18 }}
-                whileHover={{ scale: 1.2 }}
+                animate={{ scale: isActive ? 1.2 : 1 }}
+                whileHover={{ scale: 1.3 }}
                 transition={{ type: 'spring', stiffness: 300 }}
               />
               <text
                 x={npx}
-                y={npy + 6}
+                y={npy + 5}
                 textAnchor="middle"
                 className="cn-node-emoji"
-                style={{ fontSize: isActive ? '18px' : '14px' }}
+                style={{ fontSize: isActive ? '16px' : '12px' }}
               >
-                {PHASE_EMOJIS[i]}
+                {phase.emoji}
               </text>
 
               <text
-                x={cx + (r + 35) * Math.cos(rad)}
-                y={cy + (r + 35) * Math.sin(rad) + 4}
+                x={cx + (r + 32) * Math.cos(rad)}
+                y={cy + (r + 32) * Math.sin(rad) + 4}
                 textAnchor="middle"
                 className={`cn-label ${isActive ? 'active' : ''}`}
+                style={{ fontSize: '7px', visibility: isActive ? 'visible' : 'hidden' }}
               >
-                {PHASE_LABELS[i].toUpperCase()}
+                {phase.title?.toUpperCase()}
               </text>
             </g>
           )
         })}
+      </svg>
+    </div>
+  )
+}
       </svg>
     </div>
   )
