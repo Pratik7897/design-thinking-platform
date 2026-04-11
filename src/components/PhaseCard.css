@@ -65,12 +65,14 @@
   font-weight: 900;
   color: var(--text-primary);
   letter-spacing: -0.04em;
-  line-height: 1.05;
+  line-height: 1.2;
   margin-bottom: 12px;
   background: linear-gradient(135deg, #FFF 0%, var(--metallic-gold) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .p-tagline-sub {
@@ -78,6 +80,7 @@
   font-weight: 500;
   color: var(--text-secondary);
   line-height: 1.6;
+  word-wrap: break-word;
 }
 
 /* BODY CONTENT */
@@ -176,10 +179,11 @@
 }
 
 .insight-text {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   line-height: 1.6;
   color: var(--text-secondary);
+  overflow-wrap: break-word;
 }
 
 /* DYNAMIC BLOCKS */
@@ -232,9 +236,10 @@
 }
 
 .mini-card-body {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.7;
+  overflow-wrap: break-word;
 }
 
 .mini-card-badge {

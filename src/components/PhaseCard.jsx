@@ -18,7 +18,7 @@ const UIBlock = ({ title, children, icon }) => (
 const MetricItem = ({ label, value, subtext }) => (
   <div className="metric-item nm-inset">
     <div className="metric-label">{label}</div>
-    <div className="metric-value">{value}</div>
+    <div className="metric-value gold-text">{value}</div>
     {subtext && <div className="metric-subtext">{subtext}</div>}
   </div>
 )
@@ -33,7 +33,10 @@ const DataList = ({ items, type = 'bullet' }) => (
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: i * 0.05 }}
       >
-        {type === 'check' ? '✅' : '•'} {typeof item === 'string' ? item : JSON.stringify(item)}
+        <span className="bullet">{type === 'check' ? '✅' : '•'}</span>
+        <span className="item-content">
+          {typeof item === 'string' ? item : (item.name || item.text || item.label || JSON.stringify(item))}
+        </span>
       </motion.li>
     ))}
   </ul>
@@ -53,8 +56,8 @@ function DynamicPhaseContent({ phase }) {
           <div className="metrics-grid">
             {value.map((kpi, i) => (
               <div key={i} className="metric-card nm-inset">
-                <div className="metric-name">{kpi.metric || 'Performance'}</div>
-                <div className="metric-target">Target: <span className="gold-text">{kpi.target || kpi.value}</span></div>
+                <div className="metric-name">{kpi.metric || kpi.name || 'Performance Metric'}</div>
+                <div className="metric-target gold-text">{kpi.target || kpi.value || 'N/A'}</div>
               </div>
             ))}
           </div>

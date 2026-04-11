@@ -27,204 +27,166 @@ const PHASE_COLORS = {
 export async function generateAnalysis(data) {
   try {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      console.warn("No Gemini API Key found. Using fallback.");
-      return generateFallbackAnalysis(data);
-    }
+    if (!apiKey) return generateFallbackAnalysis(data);
 
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // Use flash-1.5 for speed and vision support
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // EXPLICITLY target 'v1' endpoint as requested by user
+    const modelOptions = { model: "gemini-1.5-flash-latest" };
+    const requestOptions = { apiVersion: "v1" };
+    const model = genAI.getGenerativeModel(modelOptions, requestOptions);
 
-    // Prepare inputs
-    const imagePart = data.imagePreview ? {
-      inlineData: {
-        data: data.imagePreview.split(',')[1],
-        mimeType: data.imagePreview.split(',')[0].split(':')[1].split(';')[0]
+    console.log("AI ENGINE: Using model gemini-1.5-flash-latest (API v1)");
+
+    // 1. EXTRACT VISUAL CONTEXT
+    let visualContext = "No visual data provided.";
+    if (data.imagePreview) {
+      try {
+        visualContext = await analyzeVisualContext(model, data.imagePreview);
+      } catch (err) {
+        console.warn("Visual analysis failed:", err);
       }
-    } : null;
+    }
 
-    const systemPrompt = `You are a Senior Product Strategist, UX Researcher, and Startup Advisor.
-Your job is to generate highly specific, actionable, and realistic insights for the following product.
+    // 2. GENERATE PHASES
+    const batches = [PHASE_KEYS.slice(0, 5), PHASE_KEYS.slice(5)];
+    let allPhaseData = {};
 
-STRICT RULES:
-1. NO GENERIC ADVICE. Every statement must be tailored to the EXACT product and audience.
-2. Use the product name ("${data.productName}"), industry ("${data.category}"), and target audience ("${data.targetMarket.join(', ')}") in every section.
-3. Avoid vague phrases like "improve UX". Explain exactly HOW and WHAT to change.
-4. Think like a real consultant, focusing on costs, adoption friction, and user behavior.
-5. If an image is provided, analyze it deeply to detect usage environment, product type, and visual quality. Use these signals to enhance the analysis.
-
-CONTEXT:
-Product Name: ${data.productName}
-Core Goal: ${data.goal}
-Industry: ${data.category} ${data.customIndustry ? `(${data.customIndustry})` : ''}
-Target Users: ${data.targetMarket.join(', ')} ${data.customAudience ? `(Focus: ${data.customAudience})` : ''}
-Description: ${data.description || 'N/A'}
-Problem: ${data.problemStatement || 'N/A'}
-Competitors: ${data.competitors || 'N/A'}
-Features: ${data.keyFeatures || 'N/A'}
-Monetization: ${data.monetization || 'N/A'}
-Platform: ${data.platform || 'N/A'}
-
-Return a structured JSON object strictly matching this 10-Phase schema:
-{
-  "problem_definition": {
-    "title": "Problem Definition", "tagline": "Defining the boundaries",
-    "scope": "Explain the exact scope of solving ${data.problemStatement}", 
-    "constraints": ["Industry-specific constraint 1", "..."],
-    "coreProblem": "The unique structural reason why ${data.targetMarket[0]} struggles today.",
-    "hmw": ["Specific How Might We question 1", "..."],
-    "keyInsights": ["Non-generic professional insight 1", "..."], 
-    "actionItems": [{"action": "Specific task", "timeline": "e.g. Week 1"}]
-  },
-  "user_segmentation": {
-    "title": "User Segmentation", "tagline": "Identifying value clusters",
-    "segments": [{"name": "Specific persona name", "description": "Behavioral description", "value": "Strategic value"}],
-    "targetArchetype": "Detailed behavioral profile",
-    "keyInsights": ["Insight about user behavior"],
-    "actionItems": [{"action": "Task", "timeline": "Week 2"}]
-  },
-  "empathy_mapping": {
-    "title": "Empathy Mapping", "tagline": "Visualizing attitudes",
-    "thinks": ["Specific thought relating to ${data.productName}"],
-    "feels": ["Specific visceral emotion"],
-    "says": ["Quotable user statement"],
-    "does": ["Actionable behavior"],
-    "keyInsights": ["Psychological trigger insight"],
-    "actionItems": [{"action": "Task", "timeline": "Week 3"}]
-  },
-  "pain_point_analysis": {
-    "title": "Pain Point Analysis", "tagline": "Quantifying struggle",
-    "pains": [{"issue": "Detailed friction point", "impact": "Critical/High", "frequency": "Daily/Initial"}],
-    "rootCauses": ["Structural or technical reason for pain"],
-    "keyInsights": ["Friction discovery"],
-    "actionItems": [{"action": "Task", "timeline": "Week 3"}]
-  },
-  "competitive_analysis": {
-    "title": "Competitive Analysis", "tagline": "Landscape Mapping",
-    "competitors": [{"name": "Specific rival or alternative", "advantage": "Their moat", "vulnerability": "Why ${data.productName} wins"}],
-    "uniqueMoat": "Sustainable advantage for ${data.productName}",
-    "keyInsights": ["Market gap discovery"],
-    "actionItems": [{"action": "Task", "timeline": "Ongoing"}]
-  },
-  "ideation": {
-    "title": "Ideation", "tagline": "Solution paths",
-    "concepts": [{"name": "Feature group", "description": "Actionable capability", "impact": "High"}],
-    "blueSkyIdea": "Ambitious 5-year vision",
-    "keyInsights": ["Innovation trigger"],
-    "actionItems": [{"action": "Task", "timeline": "Week 4"}]
-  },
-  "feature_prioritization": {
-    "title": "Feature Prioritization", "tagline": "Path to value",
-    "matrix": {"must": ["Vital MVP feature"], "should": ["Engagement feature"], "could": ["Delight feature"], "wont": ["Postponed feature"]},
-    "complexityVsValue": "Trade-off analysis",
-    "keyInsights": ["Focus insight"],
-    "actionItems": [{"action": "Task", "timeline": "Week 5"}]
-  },
-  "user_journey_mapping": {
-    "title": "User Journey", "tagline": "Visualizing experience",
-    "steps": [{"step": "Phase", "action": "User task", "emotion": "Pos/Neg/Neu", "insight": "Opportunity"}],
-    "magicMoment": "The exact instant the value clicks",
-    "keyInsights": ["Retention trigger"],
-    "actionItems": [{"action": "Task", "timeline": "Week 6"}]
-  },
-  "prototyping_strategy": {
-    "title": "Prototyping", "tagline": "Path to learning",
-    "focus": "Validation goal",
-    "lowFi": ["Specific sketch/wireframe type"],
-    "highFi": ["Tech stack recommendation for prototype"],
-    "keyFlow": "Most critical user path",
-    "keyInsights": ["Learning goal"],
-    "actionItems": [{"action": "Task", "timeline": "Week 7"}]
-  },
-  "validation_feedback": {
-    "title": "Validation & Feedback", "tagline": "Real-world signals",
-    "kpis": [{"metric": "Relevant KPI name", "target": "Specific numeric target e.g. 40%+"}],
-    "testPlan": "Detailed experimental setup",
-    "fallbackPlan": "Strategic pivot if metrics fail",
-    "keyInsights": ["Success signal"],
-    "actionItems": [{"action": "Task", "timeline": "Ongoing"}]
-  }
-}
-
-IMPORTANT: Return ONLY the JSON object. No markdown, no prose. Ensure numerical data for KPIs.`;
-
-    const promptParts = [systemPrompt];
-    if (imagePart) promptParts.push(imagePart);
-
-    const result = await model.generateContent(promptParts);
-    const responseText = result.response.text().replace(/```json|```/g, '').trim();
-    const aiData = JSON.parse(responseText);
+    for (const batch of batches) {
+      const results = await Promise.all(batch.map(async (key) => {
+        try {
+          console.log(`AI PIPELINE: Generating Phase -> ${key.replace(/_/g, ' ').toUpperCase()}`);
+          const result = await generatePhase(model, key, data, visualContext);
+          return { key, data: result };
+        } catch (err) {
+          console.error(`AI PIPELINE: Phase ${key} failed:`, err);
+          return { key, data: null };
+        }
+      }));
+      results.forEach(r => { if (r.data) allPhaseData[r.key] = r.data; });
+    }
 
     return {
       metadata: {
         productName: data.productName,
         category: data.category,
         generatedAt: new Date().toISOString(),
+        visualInsight: visualContext,
+        modelUsed: "gemini-1.5-flash-latest (v1)"
       },
       phases: PHASE_KEYS.reduce((acc, key) => {
+        const aiResult = allPhaseData[key];
         acc[key] = {
           ...PHASE_COLORS[key],
           emoji: getEmojiForKey(key),
-          ...aiData[key]
+          ...(aiResult || getFallbackPhase(key, data))
         };
         return acc;
       }, {})
     };
   } catch (err) {
-    console.error("AI Generation failed:", err);
+    console.error("Master Analysis failed:", err);
     return generateFallbackAnalysis(data);
   }
 }
 
-function getEmojiForKey(key) {
-  const emojis = {
-    problem_definition: '🎯',
-    user_segmentation: '👥',
-    empathy_mapping: '🤝',
-    pain_point_analysis: '⚡',
-    competitive_analysis: '⚔️',
-    ideation: '💡',
-    feature_prioritization: '⚖️',
-    user_journey_mapping: '🗺️',
-    prototyping_strategy: '🛠️',
-    validation_feedback: '✓'
+async function analyzeVisualContext(model, imageBase64) {
+  const prompt = `Analyze this product image for a Senior Strategist report. 
+  Extract purely technical and environmental cues. 
+  1. Product Form Factor 
+  2. Usage Context 
+  3. Visual Quality signals 
+  4. 3 Observations. 
+  Be specific and technical.
+  [ENTROPY_SEED: ${Date.now()}]`;
+
+  const imagePart = {
+    inlineData: {
+      data: imageBase64.split(',')[1],
+      mimeType: imageBase64.split(',')[0].split(':')[1].split(';')[0]
+    }
+  };
+  const result = await model.generateContent([prompt, imagePart]);
+  return result.response.text().trim();
+}
+
+async function generatePhase(model, phaseKey, masterData, visualContext) {
+  const phaseSpecificDirectives = {
+    problem_definition: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on boundary setting, scope constraints, and the 'structural why' behind the user friction. Do NOT mention features or solutions.",
+    user_segmentation: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on behavioral psychology, volume of segments, and value clusters. Do NOT repeat the problem statement.",
+    empathy_mapping: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on the sensory experience—visceral thoughts, feelings, and direct quotes. Avoid analytical jargon.",
+    pain_point_analysis: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on quantifying the struggle. Root causes vs immediate symptoms. Friction density.",
+    competitive_analysis: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on market moats, vulnerability mapping, and the 'unsolved gaps' of rivals.",
+    ideation: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on divergent thinking. Blue-sky concepts and high-impact feature groups. Do NOT discuss constraints here.",
+    feature_prioritization: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on the 'Value vs Complexity' trade-off and the MoSCoW framework.",
+    user_journey_mapping: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on the step-by-step chronology and the 'Magic Moment' where value clicks.",
+    prototyping_strategy: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on the validation technicality. Wireframe types and the MVP tech stack.",
+    validation_feedback: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on measurable KPIs and feedback loops. Specific numeric targets required."
+  };
+
+  const phasePrompt = `YOU ARE A SENIOR PRODUCT STRATEGIST.
+  CURRENT PHASE: "${phaseKey.toUpperCase()}"
+  PRODUCT: ${masterData.productName}
+  CONTEXT: ${visualContext}
+  GLOBAL GOAL: ${masterData.goal}
+
+  INSTRUCTION:
+  ${phaseSpecificDirectives[phaseKey]}
+
+  STRICT UNIQUENESS RULES:
+  1. Generate output ONLY for this specific phase.
+  2. DO NOT repeat analysis from any other phase.
+  3. Reference "${masterData.productName}" and its specific industry contexts.
+  4. Your output must be completely different in reasoning from other phases.
+  5. BE DEEP AND HIGH-ENTROPY. No generic text.
+
+  RETURN ONLY A CLEAN JSON OBJECT (no markdown, no prose) matching this specific schema:
+  ${JSON.stringify(getSchemaForPhase(phaseKey))}
+
+  [NONCE_SEED: ${Math.random().toString(36).substring(7)}]
+  [TIMESTAMP: ${Date.now()}]`;
+
+  const result = await model.generateContent(phasePrompt);
+  const text = result.response.text().replace(/```json|```/g, '').trim();
+  
+  try {
+    return JSON.parse(text.replace(/,(\s*[}\]])/g, '$1'));
+  } catch (e) {
+    console.error(`JSON Parse error in ${phaseKey}:`, text);
+    throw e;
   }
-  return emojis[key] || '◎'
+}
+
+function getSchemaForPhase(key) {
+  const base = { title: "String", tagline: "String", keyInsights: ["String"], actionItems: [{action: "String", timeline: "String"}] };
+  const schemas = {
+    problem_definition: { ...base, scope: "String", coreProblem: "String", hmw: ["String"] },
+    user_segmentation: { ...base, segments: [{name: "String", description: "String", value: "String"}], targetArchetype: "String" },
+    empathy_mapping: { ...base, thinks: ["String"], feels: ["String"], says: ["String"], does: ["String"] },
+    pain_point_analysis: { ...base, pains: [{issue: "String", impact: "String", frequency: "String"}], rootCauses: ["String"] },
+    competitive_analysis: { ...base, competitors: [{name: "String", advantage: "String", vulnerability: "String"}], uniqueMoat: "String" },
+    ideation: { ...base, concepts: [{name: "String", description: "String", impact: "String"}], blueSkyIdea: "String" },
+    feature_prioritization: { ...base, matrix: {must: ["String"], should: ["String"], could: ["String"], wont: ["String"]}, complexityVsValue: "String" },
+    user_journey_mapping: { ...base, steps: [{step: "String", action: "String", emotion: "Pos/Neg/Neu", insight: "String"}], magicMoment: "String" },
+    prototyping_strategy: { ...base, focus: "String", lowFi: ["String"], highFi: ["String"], keyFlow: "String" },
+    validation_feedback: { ...base, kpis: [{metric: "String", target: "String"}], testPlan: "String", fallbackPlan: "String" }
+  };
+  return schemas[key];
+}
+
+function getEmojiForKey(key) {
+  const emojis = { problem_definition: '🎯', user_segmentation: '👥', empathy_mapping: '🤝', pain_point_analysis: '⚡', competitive_analysis: '⚔️', ideation: '💡', feature_prioritization: '⚖️', user_journey_mapping: '🗺️', prototyping_strategy: '🛠️', validation_feedback: '✓' };
+  return emojis[key] || '◎';
+}
+
+function getFallbackPhase(key, data) {
+  return { title: key.replace(/_/g, ' ').toUpperCase(), tagline: "Strategic Analysis", keyInsights: ["Evaluate user needs.", "Audit competitors."], actionItems: [{action: "Perform research", timeline: "Week 1"}] };
 }
 
 function generateFallbackAnalysis(data) {
-  const productName = data.productName || 'the product'
-  const category = data.category || 'the market'
-  const targetMarket = (data.targetMarket && data.targetMarket.length > 0) ? data.targetMarket[0] : 'target audiences'
-
   return {
-    metadata: {
-      productName,
-      category,
-      generatedAt: new Date().toISOString(),
-    },
-    phases: PHASE_KEYS.reduce((acc, key) => {
-      acc[key] = {
-        ...PHASE_COLORS[key],
-        title: key.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
-        emoji: getEmojiForKey(key),
-        tagline: 'Strategic data analysis',
-        keyInsights: [`Define specific objectives for ${productName} within the ${category} industry.`, `Ensure solutions are tailored for ${targetMarket}.`],
-        actionItems: [{ action: 'Conduct initial research', timeline: 'Week 1' }]
-      };
-      
-      // Add a few custom fields for fallbacks to avoid crashes
-      if (key === 'validation_feedback') {
-        acc[key].kpis = [
-          { metric: 'User Activation', target: '40%+' },
-          { metric: 'Retention Rate', target: '25% after 30 days' }
-        ];
-      }
-      
-      return acc;
-    }, {})
-  }
+    metadata: { productName: data.productName || 'Analysis', generatedAt: new Date().toISOString() },
+    phases: PHASE_KEYS.reduce((acc, key) => { acc[key] = { ...PHASE_COLORS[key], emoji: getEmojiForKey(key), ...getFallbackPhase(key, data) }; return acc; }, {})
+  };
 }
