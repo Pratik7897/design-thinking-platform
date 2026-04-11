@@ -1,3 +1,5 @@
+import { generateFromOpenRouter } from './openrouter';
+
 const PHASE_KEYS = [
   'problem_definition',
   'user_segmentation',
@@ -9,7 +11,7 @@ const PHASE_KEYS = [
   'user_journey_mapping',
   'prototyping_strategy',
   'validation_feedback'
-]
+];
 
 const PHASE_COLORS = {
   problem_definition: { primary: '#1E293B', dark: '#0F172A', light: '#334155', text: '#FFFFFF' },
@@ -22,48 +24,37 @@ const PHASE_COLORS = {
   user_journey_mapping: { primary: '#E5C76B', dark: '#D4AF37', light: '#F5F5DC', text: '#0F172A' },
   prototyping_strategy: { primary: '#71717A', dark: '#3F3F46', light: '#A1A1AA', text: '#FFFFFF' },
   validation_feedback: { primary: '#18181B', dark: '#09090B', light: '#27272A', text: '#FFFFFF' },
-}
+};
 
+/**
+ * Main Analysis Orchestrator
+ * Fully migrated to OpenRouter (DeepSeek-V3) for production stability
+ */
 export async function generateAnalysis(data) {
   try {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
     if (!apiKey) return generateFallbackAnalysis(data);
 
-    const { GoogleGenerativeAI } = await import('@google/generative-ai');
-    const genAI = new GoogleGenerativeAI(apiKey);
+    console.log("[AI ENGINE] Initiating 10-Phase DeepSeek Strategy Pipeline...");
+
+    // Process in batches (5+5) to manage server-side load effectively
+    const batch1 = PHASE_KEYS.slice(0, 5);
+    const batch2 = PHASE_KEYS.slice(5);
     
-    // EXPLICITLY target 'v1' endpoint as requested by user
-    const modelOptions = { model: "gemini-1.5-flash-latest" };
-    const requestOptions = { apiVersion: "v1" };
-    const model = genAI.getGenerativeModel(modelOptions, requestOptions);
-
-    console.log("AI ENGINE: Using model gemini-1.5-flash-latest (API v1)");
-
-    // 1. EXTRACT VISUAL CONTEXT
-    let visualContext = "No visual data provided.";
-    if (data.imagePreview) {
-      try {
-        visualContext = await analyzeVisualContext(model, data.imagePreview);
-      } catch (err) {
-        console.warn("Visual analysis failed:", err);
-      }
-    }
-
-    // 2. GENERATE PHASES
-    const batches = [PHASE_KEYS.slice(0, 5), PHASE_KEYS.slice(5)];
     let allPhaseData = {};
 
-    for (const batch of batches) {
+    for (const batch of [batch1, batch2]) {
       const results = await Promise.all(batch.map(async (key) => {
         try {
-          console.log(`AI PIPELINE: Generating Phase -> ${key.replace(/_/g, ' ').toUpperCase()}`);
-          const result = await generatePhase(model, key, data, visualContext);
-          return { key, data: result };
+          console.log(`[AI PROVIDER] OpenRouter`);
+          console.log(`[AI PHASE] ${key.toUpperCase()}`);
+          return { key, data: await runPhase(key, data) };
         } catch (err) {
-          console.error(`AI PIPELINE: Phase ${key} failed:`, err);
+          console.error(`[AI ERROR] Phase ${key} failed:`, err);
           return { key, data: null };
         }
       }));
+      
       results.forEach(r => { if (r.data) allPhaseData[r.key] = r.data; });
     }
 
@@ -72,90 +63,68 @@ export async function generateAnalysis(data) {
         productName: data.productName,
         category: data.category,
         generatedAt: new Date().toISOString(),
-        visualInsight: visualContext,
-        modelUsed: "gemini-1.5-flash-latest (v1)"
+        engine: "DeepSeek-V3 (via OpenRouter)"
       },
       phases: PHASE_KEYS.reduce((acc, key) => {
         const aiResult = allPhaseData[key];
         acc[key] = {
           ...PHASE_COLORS[key],
           emoji: getEmojiForKey(key),
-          ...(aiResult || getFallbackPhase(key, data))
+          ...(aiResult || getErrorState(key))
         };
         return acc;
       }, {})
     };
   } catch (err) {
-    console.error("Master Analysis failed:", err);
+    console.error("[AI FATAL] Pipeline Collapse:", err);
     return generateFallbackAnalysis(data);
   }
 }
 
-async function analyzeVisualContext(model, imageBase64) {
-  const prompt = `Analyze this product image for a Senior Strategist report. 
-  Extract purely technical and environmental cues. 
-  1. Product Form Factor 
-  2. Usage Context 
-  3. Visual Quality signals 
-  4. 3 Observations. 
-  Be specific and technical.
-  [ENTROPY_SEED: ${Date.now()}]`;
-
-  const imagePart = {
-    inlineData: {
-      data: imageBase64.split(',')[1],
-      mimeType: imageBase64.split(',')[0].split(':')[1].split(';')[0]
-    }
-  };
-  const result = await model.generateContent([prompt, imagePart]);
-  return result.response.text().trim();
-}
-
-async function generatePhase(model, phaseKey, masterData, visualContext) {
-  const phaseSpecificDirectives = {
-    problem_definition: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on boundary setting, scope constraints, and the 'structural why' behind the user friction. Do NOT mention features or solutions.",
-    user_segmentation: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on behavioral psychology, volume of segments, and value clusters. Do NOT repeat the problem statement.",
-    empathy_mapping: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on the sensory experience—visceral thoughts, feelings, and direct quotes. Avoid analytical jargon.",
-    pain_point_analysis: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on quantifying the struggle. Root causes vs immediate symptoms. Friction density.",
-    competitive_analysis: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on market moats, vulnerability mapping, and the 'unsolved gaps' of rivals.",
-    ideation: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on divergent thinking. Blue-sky concepts and high-impact feature groups. Do NOT discuss constraints here.",
-    feature_prioritization: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on the 'Value vs Complexity' trade-off and the MoSCoW framework.",
-    user_journey_mapping: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on the step-by-step chronology and the 'Magic Moment' where value clicks.",
-    prototyping_strategy: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on the validation technicality. Wireframe types and the MVP tech stack.",
-    validation_feedback: "STRATEGIC ANCHOR: Focus EXCLUSIVELY on measurable KPIs and feedback loops. Specific numeric targets required."
-  };
-
-  const phasePrompt = `YOU ARE A SENIOR PRODUCT STRATEGIST.
-  CURRENT PHASE: "${phaseKey.toUpperCase()}"
-  PRODUCT: ${masterData.productName}
-  CONTEXT: ${visualContext}
-  GLOBAL GOAL: ${masterData.goal}
-
-  INSTRUCTION:
-  ${phaseSpecificDirectives[phaseKey]}
-
-  STRICT UNIQUENESS RULES:
-  1. Generate output ONLY for this specific phase.
-  2. DO NOT repeat analysis from any other phase.
-  3. Reference "${masterData.productName}" and its specific industry contexts.
-  4. Your output must be completely different in reasoning from other phases.
-  5. BE DEEP AND HIGH-ENTROPY. No generic text.
-
-  RETURN ONLY A CLEAN JSON OBJECT (no markdown, no prose) matching this specific schema:
-  ${JSON.stringify(getSchemaForPhase(phaseKey))}
-
-  [NONCE_SEED: ${Math.random().toString(36).substring(7)}]
-  [TIMESTAMP: ${Date.now()}]`;
-
-  const result = await model.generateContent(phasePrompt);
-  const text = result.response.text().replace(/```json|```/g, '').trim();
+/**
+ * Individual Phase Generator
+ * Enforces JSON Schema and Phase Isolation
+ */
+const runPhase = async (phaseKey, masterData) => {
+  const directive = getStrategicAnchor(phaseKey);
+  const schema = getSchemaForPhase(phaseKey);
   
-  try {
-    return JSON.parse(text.replace(/,(\s*[}\]])/g, '$1'));
-  } catch (e) {
-    console.error(`JSON Parse error in ${phaseKey}:`, text);
-    throw e;
-  }
+  const prompt = `
+  PHASE: "${phaseKey.toUpperCase()}"
+  PRODUCT: ${masterData.productName} (${masterData.category})
+  GOAL: ${masterData.goal}
+  AUDIENCE: ${masterData.targetMarket.join(', ')}
+
+  STRATEGIC DIRECTIVE:
+  ${directive}
+
+  STRICT RULES:
+  1. Generate ONLY phase-specific output for this product.
+  2. Do NOT repeat text from other phases.
+  3. Reference "${masterData.productName}" explicitly 2-3 times.
+  4. Ensure insights are actionable, not generic.
+
+  RETURN JSON ONLY matching this schema:
+  ${JSON.stringify(schema)}
+  `;
+
+  return await generateFromOpenRouter(prompt);
+};
+
+function getStrategicAnchor(key) {
+  const anchors = {
+    problem_definition: "Define the core problem. Focus on scope, constraints, and 'How Might We' questions. Do not suggest solutions yet.",
+    user_segmentation: "Divide the market into behavioral segments and value clusters. Identify the primary hero persona.",
+    empathy_mapping: "Deep dive into the user's sensory experience (Thinks, Feels, Says, Does) specifically regarding ${masterData.productName}.",
+    pain_point_analysis: "Quantify the friction. Separate symptoms from root causes. Focus on emotional and functional obstacles.",
+    competitive_analysis: "Map the landscape. Focus on rival vulnerabilities and your sustainable competitive advantage (Moat).",
+    ideation: "Synthesize high-impact concept groups and a 5-year 'Blue Sky' vision for the product.",
+    feature_prioritization: "Draft a MoSCoW matrix. Balance technical complexity against user value.",
+    user_journey_mapping: "Detail the step-by-step chronology of use. Pinpoint the 'Magic Moment' where value clicks.",
+    prototyping_strategy: "Design a validation pathway. Define the technical stack (High-fi) and core user flow to test.",
+    validation_feedback: "Architect the growth engine. Define 2-3 specific KPIs with numeric targets and a strategic pivot/fallback plan."
+  };
+  return anchors[key] || "Analyze this phase with high strategic depth.";
 }
 
 function getSchemaForPhase(key) {
@@ -172,7 +141,7 @@ function getSchemaForPhase(key) {
     prototyping_strategy: { ...base, focus: "String", lowFi: ["String"], highFi: ["String"], keyFlow: "String" },
     validation_feedback: { ...base, kpis: [{metric: "String", target: "String"}], testPlan: "String", fallbackPlan: "String" }
   };
-  return schemas[key];
+  return schemas[key] || base;
 }
 
 function getEmojiForKey(key) {
@@ -180,13 +149,18 @@ function getEmojiForKey(key) {
   return emojis[key] || '◎';
 }
 
-function getFallbackPhase(key, data) {
-  return { title: key.replace(/_/g, ' ').toUpperCase(), tagline: "Strategic Analysis", keyInsights: ["Evaluate user needs.", "Audit competitors."], actionItems: [{action: "Perform research", timeline: "Week 1"}] };
+function getErrorState(key) {
+  return { 
+    title: key.replace(/_/g, ' ').toUpperCase(), 
+    tagline: "AI GENERATION FAILED", 
+    keyInsights: ["Connection error with deepseek engine.", "Please retry this generation phase."], 
+    actionItems: [{action: "Restart Analysis", timeline: "Immediate"}] 
+  };
 }
 
 function generateFallbackAnalysis(data) {
   return {
-    metadata: { productName: data.productName || 'Analysis', generatedAt: new Date().toISOString() },
-    phases: PHASE_KEYS.reduce((acc, key) => { acc[key] = { ...PHASE_COLORS[key], emoji: getEmojiForKey(key), ...getFallbackPhase(key, data) }; return acc; }, {})
+    metadata: { productName: data.productName || 'Analysis', engine: "Static Fallback" },
+    phases: PHASE_KEYS.reduce((acc, key) => { acc[key] = { ...PHASE_COLORS[key], emoji: getEmojiForKey(key), ...getErrorState(key) }; return acc; }, {})
   };
 }
