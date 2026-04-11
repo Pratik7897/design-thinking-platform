@@ -3,13 +3,30 @@
  * Generates comprehensive product analysis based on user input
  */
 
+const PHASE_KEYS = [
+  'problem_definition',
+  'user_segmentation',
+  'empathy_mapping',
+  'pain_point_analysis',
+  'competitive_analysis',
+  'ideation',
+  'feature_prioritization',
+  'user_journey_mapping',
+  'prototyping_strategy',
+  'validation_feedback'
+]
+
 const PHASE_COLORS = {
-  empathize: { primary: '#FFD966', dark: '#E6BC3A', light: '#FFF3C4', text: '#7A5F00' },
-  define: { primary: '#FF9B85', dark: '#E67D66', light: '#FFE8E3', text: '#7A2C1A' },
-  ideate: { primary: '#E975BA', dark: '#CC5A9E', light: '#FCE4F4', text: '#6B1A52' },
-  prototype: { primary: '#5B7FB0', dark: '#3D6095', light: '#DDE6F5', text: '#1E3A5F' },
-  test: { primary: '#4DBFB5', dark: '#32A49A', light: '#D6F5F3', text: '#14524E' },
-  refine: { primary: '#A8B5C4', dark: '#7A8FA2', light: '#E8EDF2', text: '#3A4A56' },
+  problem_definition: { primary: '#2563EB', dark: '#1E40AF', light: '#DBEAFE', text: '#FFFFFF' },
+  user_segmentation: { primary: '#4F46E5', dark: '#3730A3', light: '#E0E7FF', text: '#FFFFFF' },
+  empathy_mapping: { primary: '#7C3AED', dark: '#5B21B6', light: '#EDE9FE', text: '#FFFFFF' },
+  pain_point_analysis: { primary: '#DC2626', dark: '#991B1B', light: '#FEE2E2', text: '#FFFFFF' },
+  competitive_analysis: { primary: '#D97706', dark: '#92400E', light: '#FEF3C7', text: '#FFFFFF' },
+  ideation: { primary: '#DB2777', dark: '#9D174D', light: '#FCE7F3', text: '#FFFFFF' },
+  feature_prioritization: { primary: '#059669', dark: '#065F46', light: '#D1FAE5', text: '#FFFFFF' },
+  user_journey_mapping: { primary: '#0891B2', dark: '#155E75', light: '#CFFAFE', text: '#FFFFFF' },
+  prototyping_strategy: { primary: '#475569', dark: '#1E293B', light: '#F1F5F9', text: '#FFFFFF' },
+  validation_feedback: { primary: '#65A30D', dark: '#3F6212', light: '#ECFCCB', text: '#FFFFFF' },
 }
 
 function generatePersonas(data) {
@@ -389,62 +406,74 @@ export async function generateAnalysis(data) {
       generationConfig: { responseMimeType: "application/json" }
     });
 
-    const prompt = `You are a world-class Product Manager and Design Thinking coach.
-Generate a highly specific, creative, and insightful Product Analysis JSON.
-Product: ${data.productName}
-Category: ${data.category}
-Target Market: ${data.targetMarket}
-Description: ${data.description || 'N/A'}
+    const prompt = `You are a world-class Product Strategy Consultant and Design Thinking expert.
+Generate a deep, professional, and highly structured Product Analysis JSON for a product in the ${data.category} space.
 
-Return ONLY a JSON object EXACTLY matching this schema:
+Product Context:
+Name: ${data.productName}
+Description: ${data.description || 'N/A'}
+Problem Statement: ${data.problemStatement || 'N/A'}
+Target Audience: ${data.targetMarket}
+Competitors: ${data.competitors || 'N/A'}
+Key Features: ${data.keyFeatures || 'N/A'}
+Monetization: ${data.monetization || 'N/A'}
+Platform: ${data.platform || 'Cross-platform'}
+
+Return ONLY a JSON object EXACTLY matching this 10-Phase schema:
 {
-  "empathize": {
-    "personas": [{ "name": "", "age": "", "role": "", "avatar": "", "description": "", "goals": [""], "pains": [""], "behaviors": [""] }, {"name": "Persona 2", ...}],
-    "painPoints": [{ "severity": "High/Medium/Low", "point": "" }],
-    "empathyMap": { "thinks": [""], "feels": [""], "says": [""], "does": [""] },
-    "keyInsights": ["", "", "", "", ""],
-    "actionItems": [{ "action": "", "timeline": "" }]
+  "problem_definition": {
+    "title": "Problem Definition", "tagline": "Defining the boundaries of the challenge",
+    "scope": "", "constraints": [""], "coreProblem": "", "hmw": ["", "", ""],
+    "keyInsights": [""], "actionItems": [{"action": "", "timeline": ""}]
   },
-  "define": {
-    "pov": "", "hmw": ["", "", "", ""], "coreChallenge": "",
-    "kpis": [{ "metric": "", "target": "", "type": "" }],
-    "valueProposition": "",
-    "marketOpportunity": { "tam": "", "sam": "", "som": "" },
-    "keyInsights": ["", "", "", "", ""],
-    "actionItems": [{ "action": "", "timeline": "" }]
+  "user_segmentation": {
+    "title": "User Segmentation", "tagline": "Identifying high-value user clusters",
+    "segments": [{"name": "", "description": "", "value": "High/Med/Low"}],
+    "targetArchetype": "", "keyInsights": [""], "actionItems": [{"action": "", "timeline": ""}]
   },
-  "ideate": {
-    "features": [{ "name": "", "priority": "Critical", "effort": "High", "impact": "High", "description": "" }],
-    "strategies": [{ "approach": "", "description": "" }],
-    "usps": ["", "", "", "", ""],
-    "keyInsights": ["", "", "", "", ""],
-    "actionItems": [{ "action": "", "timeline": "" }]
+  "empathy_mapping": {
+    "title": "Empathy Mapping", "tagline": "Visualizing user attitudes and behaviors",
+    "thinks": [""], "feels": [""], "says": [""], "does": [""],
+    "keyInsights": [""], "actionItems": [{"action": "", "timeline": ""}]
   },
-  "prototype": {
-    "mvpFeatures": [{ "feature": "", "description": "", "mustHave": true }],
-    "roadmap": [{ "phase": "", "title": "", "items": ["", "", ""] }],
-    "pricingOptions": [{ "model": "", "description": "", "pros": [""], "cons": [""] }],
-    "techStack": { "frontend": [""], "backend": [""], "infrastructure": [""] },
-    "keyInsights": ["", "", "", "", ""],
-    "actionItems": [{ "action": "", "timeline": "" }]
+  "pain_point_analysis": {
+    "title": "Pain Point Analysis", "tagline": "Quantifying the user's struggle",
+    "pains": [{"issue": "", "impact": "Critical/High/Med", "frequency": ""}],
+    "rootCauses": [""], "keyInsights": [""], "actionItems": [{"action": "", "timeline": ""}]
   },
-  "test": {
-    "assumptions": [{ "assumption": "", "priority": "Critical/High/Medium", "method": "" }],
-    "testingMethods": [{ "method": "", "timeline": "", "participants": "", "goal": "" }],
-    "risks": [{ "risk": "", "level": "High/Medium/Low", "mitigation": "" }],
-    "successCriteria": ["", "", "", "", ""],
-    "keyInsights": ["", "", "", "", ""],
-    "actionItems": [{ "action": "", "timeline": "" }]
+  "competitive_analysis": {
+    "title": "Competitive Analysis", "tagline": "Mapping the landscape of alternatives",
+    "competitors": [{"name": "", "advantage": "", "vulnerability": ""}],
+    "uniqueMoat": "", "keyInsights": [""], "actionItems": [{"action": "", "timeline": ""}]
   },
-  "refine": {
-    "iterationPriorities": [{ "priority": 1, "area": "", "description": "", "impact": "High/Medium", "effort": "High/Medium" }],
-    "longTermVision": { "year1": "", "year2": "", "year3": "", "vision": "" },
-    "uxImprovements": ["", "", "", "", ""],
-    "keyInsights": ["", "", "", "", ""],
-    "actionItems": [{ "action": "", "timeline": "" }]
+  "ideation": {
+    "title": "Ideation", "tagline": "Generating disruptive solution paths",
+    "concepts": [{"name": "", "description": "", "impact": "High"}],
+    "blueSkyIdea": "", "keyInsights": [""], "actionItems": [{"action": "", "timeline": ""}]
+  },
+  "feature_prioritization": {
+    "title": "Feature Prioritization", "tagline": "Defining the path to value",
+    "matrix": {"must": [""], "should": [""], "could": [""], "wont": [""]},
+    "complexityVsValue": "", "keyInsights": [""], "actionItems": [{"action": "", "timeline": ""}]
+  },
+  "user_journey_mapping": {
+    "title": "User Journey Mapping", "tagline": "Visualizing the end-to-end experience",
+    "steps": [{"step": "", "action": "", "emotion": "Pos/Neg/Neu", "insight": ""}],
+    "magicMoment": "", "keyInsights": [""], "actionItems": [{"action": "", "timeline": ""}]
+  },
+  "prototyping_strategy": {
+    "title": "Prototyping Strategy", "tagline": "Minimum viable paths to learning",
+    "focus": "", "lowFi": [""], "highFi": [""], "keyFlow": "",
+    "keyInsights": [""], "actionItems": [{"action": "", "timeline": ""}]
+  },
+  "validation_feedback": {
+    "title": "Validation & Feedback", "tagline": "Closing the loop with real-world signals",
+    "kpis": [{"metric": "", "target": ""}], "testPlan": "", "fallbackPlan": "",
+    "keyInsights": [""], "actionItems": [{"action": "", "timeline": ""}]
   }
 }
-If any fields do not strictly apply, creatively invent realistic scenarios for this specific product. Ensure the output is valid JSON.`;
+
+Ensure the analysis is based on established frameworks like MoSCoW, Lean Startup, and Human-Centered Design.`;
 
     const result = await model.generateContent(prompt);
     const text = result.response.text();
@@ -454,19 +483,32 @@ If any fields do not strictly apply, creatively invent realistic scenarios for t
       metadata: {
         productName: data.productName,
         category: data.category,
-        currentStage: data.currentStage,
-        targetMarket: data.targetMarket,
         generatedAt: new Date().toISOString(),
       },
-      phases: {
-        empathize: { ...PHASE_COLORS.empathize, title: 'Empathize', emoji: '🤝', tagline: 'Understanding users and their needs', ...aiData.empathize },
-        define: { ...PHASE_COLORS.define, title: 'Define', emoji: '🎯', tagline: 'Synthesizing insights into clear problem statements', ...aiData.define },
-        ideate: { ...PHASE_COLORS.ideate, title: 'Ideate', emoji: '💡', tagline: 'Generating creative solutions and possibilities', ...aiData.ideate },
-        prototype: { ...PHASE_COLORS.prototype, title: 'Prototype', emoji: '🛠️', tagline: 'Creating tangible representations and launch plans', ...aiData.prototype },
-        test: { ...PHASE_COLORS.test, title: 'Test', emoji: '✓', tagline: 'Validating assumptions through real-world feedback', ...aiData.test },
-        refine: { ...PHASE_COLORS.refine, title: 'Refine', emoji: '🔄', tagline: 'Iterating based on insights for continuous improvement', ...aiData.refine },
-      }
+      phases: PHASE_KEYS.reduce((acc, key) => {
+        acc[key] = {
+          ...PHASE_COLORS[key],
+          emoji: getEmojiForKey(key),
+          ...aiData[key]
+        };
+        return acc;
+      }, {})
     };
+function getEmojiForKey(key) {
+  const emojis = {
+    problem_definition: '🎯',
+    user_segmentation: '👥',
+    empathy_mapping: '🤝',
+    pain_point_analysis: '⚡',
+    competitive_analysis: '⚔️',
+    ideation: '💡',
+    feature_prioritization: '⚖️',
+    user_journey_mapping: '🗺️',
+    prototyping_strategy: '🛠️',
+    validation_feedback: '✓'
+  }
+  return emojis[key] || '◎'
+}
   } catch (err) {
     console.error("AI Generation failed:", err);
     return generateFallbackAnalysis(data);

@@ -3,22 +3,35 @@ import { motion, AnimatePresence } from 'framer-motion'
 import './InputForm.css'
 
 const CATEGORIES = [
-  { id: 'electronics', label: 'Electronics & Hardware', icon: '💻' },
-  { id: 'software', label: 'Software & SaaS', icon: '☁️' },
-  { id: 'mobile', label: 'Mobile App', icon: '📱' },
-  { id: 'ecommerce', label: 'E-commerce & Retail', icon: '🛒' },
-  { id: 'health', label: 'Health & Wellness', icon: '🧘' },
-  { id: 'edu', label: 'Education & EdTech', icon: '🎓' },
-  { id: 'fintech', label: 'FinTech & Finance', icon: '💰' },
+  { id: 'saas', label: 'Software & SaaS', icon: '☁️' },
   { id: 'ai', label: 'AI & Machine Learning', icon: '🤖' },
-  { id: 'other', label: 'Other', icon: '✨' }
+  { id: 'fintech', label: 'FinTech & Finance', icon: '💰' },
+  { id: 'edtech', label: 'Education & EdTech', icon: '🎓' },
+  { id: 'health', label: 'Health & Wellness', icon: '🧘' },
+  { id: 'ecommerce', label: 'E-commerce & Retail', icon: '🛒' },
+  { id: 'gaming', label: 'Gaming', icon: '🎮' },
+  { id: 'social', label: 'Social Media', icon: '📱' },
+  { id: 'logistics', label: 'Logistics', icon: '🚛' },
+  { id: 'travel', label: 'Travel & Hospitality', icon: '✈️' },
+  { id: 'food', label: 'Food & Delivery', icon: '🍕' },
+  { id: 'security', label: 'Cybersecurity', icon: '🛡️' },
+  { id: 'web3', label: 'Blockchain / Web3', icon: '⛓️' },
+  { id: 'productivity', label: 'Productivity Tools', icon: '⏱️' },
+  { id: 'electronics', label: 'Electronics & Hardware', icon: '🔌' },
+  { id: 'other', label: 'Other (Custom)', icon: '✨' }
 ]
 
-const STAGES = [
-  { value: 'concept', label: '💭 Concept', description: 'Just an idea in the works' },
-  { value: 'prototype', label: '🔧 Prototype', description: 'Early version being built' },
-  { value: 'mvp', label: '🚀 MVP', description: 'Minimum viable product ready' },
-  { value: 'growth', label: '📈 Scaling', description: 'Growing and expanding' },
+const AUDIENCES = [
+  { id: 'students', label: 'Students', emoji: '📚' },
+  { id: 'professionals', label: 'Professionals', emoji: '💼' },
+  { id: 'developers', label: 'Developers', emoji: '🧑‍💻' },
+  { id: 'smb', label: 'Small Business Owners', emoji: '🏪' },
+  { id: 'startups', label: 'Startups', emoji: '🚀' },
+  { id: 'enterprises', label: 'Enterprises', emoji: '🏢' },
+  { id: 'seniors', label: 'Senior Citizens', emoji: '👵' },
+  { id: 'genz', label: 'Gen Z / Youth', emoji: '🎮' },
+  { id: 'parents', label: 'Parents / Families', emoji: '👨‍👩‍👧' },
+  { id: 'custom', label: 'Custom Audience', emoji: '🌐' }
 ]
 
 const PRODUCT_GOALS = [
@@ -27,14 +40,8 @@ const PRODUCT_GOALS = [
   { id: 'growth', label: 'Drive User Growth', emoji: '📈' },
   { id: 'revenue', label: 'Increase Revenue', emoji: '💸' },
   { id: 'accessibility', label: 'Accessibility', emoji: '♿' },
-]
-
-const AUDIENCES = [
-  { id: 'genz', label: 'Gen Z / Youth', emoji: '🎮' },
-  { id: 'enterprise', label: 'Enterprise / B2B', emoji: '🏢' },
-  { id: 'creators', label: 'Creators / Artists', emoji: '🎨' },
-  { id: 'parents', label: 'Parents / Families', emoji: '👨‍👩‍👧' },
-  { id: 'other', label: 'Other / Mixed', emoji: '🌐' }
+  { id: 'automation', label: 'Automation', emoji: '🤖' },
+  { id: 'scaling', label: 'Scale Operations', emoji: '🔝' }
 ]
 
 export default function InputForm({ onSubmit, onBack }) {
