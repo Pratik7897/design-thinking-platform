@@ -1,490 +1,213 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import './PhaseCard.css'
 
-function EmphasizeContent({ phase }) {
-  return (
-    <div className="phase-content">
-      {/* Personas */}
-      <div className="content-section">
-        <h4 className="content-section-title">👥 User Personas</h4>
-        <div className="personas-list">
-          {(phase.personas || []).map((p, i) => (
-            <div key={i} className="persona-card">
-              <div className="persona-header">
-                <span className="persona-avatar">{p.avatar}</span>
-                <div>
-                  <div className="persona-name">{p.name}</div>
-                  <div className="persona-role">{p.role} · Age {p.age}</div>
-                </div>
+// Professional UI Blocks for Dynamic Content
+const UIBlock = ({ title, children, icon }) => (
+  <div className="ui-block glass nm-flat animate-fade-in">
+    {title && (
+      <div className="ui-block-header">
+        <span className="ui-block-icon">{icon}</span>
+        <h4 className="ui-block-title">{title}</h4>
+      </div>
+    )}
+    <div className="ui-block-content">{children}</div>
+  </div>
+)
+
+const MetricItem = ({ label, value, subtext }) => (
+  <div className="metric-item nm-inset">
+    <div className="metric-label">{label}</div>
+    <div className="metric-value">{value}</div>
+    {subtext && <div className="metric-subtext">{subtext}</div>}
+  </div>
+)
+
+const DataList = ({ items, type = 'bullet' }) => (
+  <ul className={`data-list ${type}-list`}>
+    {items.map((item, i) => (
+      <motion.li 
+        key={i} 
+        className="data-list-item nm-thin"
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: i * 0.05 }}
+      >
+        {type === 'check' ? '✅' : '•'} {typeof item === 'string' ? item : JSON.stringify(item)}
+      </motion.li>
+    ))}
+  </ul>
+)
+
+// Dynamic Content Renderer
+function DynamicPhaseContent({ phase }) {
+  const renderDataField = (key, value) => {
+    if (!value || key === 'title' || key === 'tagline' || key === 'keyInsights' || key === 'actionItems' || key === 'primary' || key === 'dark' || key === 'light' || key === 'text' || key === 'emoji') return null
+
+    const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
+    
+    // Custom renderers based on key name or value structure
+    if (key === 'segments' || key === 'competitors' || key === 'concepts' || key === 'pains') {
+      return (
+        <UIBlock title={label} icon="🎯" key={key}>
+          <div className="blocks-grid">
+            {value.map((item, i) => (
+              <div key={i} className="insight-mini-card nm-flat">
+                <div className="mini-card-title">{item.name || item.issue || item.step || 'Details'}</div>
+                <div className="mini-card-body">{item.description || item.advantage || item.impact || item.insight}</div>
+                {item.value && <span className="mini-card-badge">{item.value}</span>}
               </div>
-              <p className="persona-desc">{p.description}</p>
-              <div className="persona-split">
-                <div>
-                  <div className="persona-label">Goals</div>
-                  {p.goals.map((g, j) => <div key={j} className="persona-item persona-item-goal">✓ {g}</div>)}
-                </div>
-                <div>
-                  <div className="persona-label">Pain Points</div>
-                  {p.pains.map((pain, j) => <div key={j} className="persona-item persona-item-pain">✗ {pain}</div>)}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Pain Points */}
-      <div className="content-section">
-        <h4 className="content-section-title">⚡ Pain Points</h4>
-        <div className="pain-points-list">
-          {(phase.painPoints || []).map((pp, i) => (
-            <div key={i} className={`pain-point severity-${pp.severity.toLowerCase()}`}>
-              <span className="severity-badge">{pp.severity}</span>
-              <span className="pain-text">{pp.point}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Empathy Map */}
-      <div className="content-section">
-        <h4 className="content-section-title">🗺️ Empathy Map</h4>
-        <div className="empathy-map">
-          {Object.entries(phase.empathyMap || {}).map(([key, values]) => (
-            <div key={key} className="empathy-quadrant">
-              <div className="eq-header">{key.charAt(0).toUpperCase() + key.slice(1)}</div>
-              {values.map((v, i) => <div key={i} className="eq-item">"{v}"</div>)}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function DefineContent({ phase }) {
-  return (
-    <div className="phase-content">
-      <div className="content-section">
-        <h4 className="content-section-title">📌 Point of View Statement</h4>
-        <div className="pov-box">
-          <blockquote className="pov-quote">{phase.pov}</blockquote>
-        </div>
-      </div>
-
-      <div className="content-section">
-        <h4 className="content-section-title">🤔 How Might We Questions</h4>
-        <div className="hmw-list">
-          {(phase.hmw || []).map((q, i) => (
-            <div key={i} className="hmw-item">
-              <span className="hmw-num">HMW {i + 1}</span>
-              <span>{q}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="content-section">
-        <h4 className="content-section-title">📊 Success KPIs</h4>
-        <div className="kpis-list">
-          {(phase.kpis || []).map((kpi, i) => (
-            <div key={i} className="kpi-item">
-              <div className="kpi-type">{kpi.type}</div>
-              <div className="kpi-metric">{kpi.metric}</div>
-              <div className="kpi-target">{kpi.target}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="content-section">
-        <h4 className="content-section-title">🎯 Value Proposition</h4>
-        <div className="value-prop-box">
-          <p>{phase.valueProposition}</p>
-        </div>
-      </div>
-
-      <div className="content-section">
-        <h4 className="content-section-title">📈 Market Opportunity</h4>
-        <div className="market-opp">
-          {Object.entries(phase.marketOpportunity || {}).map(([key, val]) => (
-            <div key={key} className="market-item">
-              <span className="market-key">{key.toUpperCase()}</span>
-              <span className="market-val">{val}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function IdeateContent({ phase }) {
-  const [showAll, setShowAll] = useState(false)
-  const features = phase.features || []
-  const shown = showAll ? features : features.slice(0, 6)
-
-  return (
-    <div className="phase-content">
-      <div className="content-section">
-        <h4 className="content-section-title">⚡ Feature Ideas</h4>
-        <div className="features-grid">
-          {shown.map((f, i) => (
-            <div key={i} className={`feature-item priority-${f.priority.toLowerCase()}`}>
-              <div className="feature-header">
-                <span className="feature-name">{f.name}</span>
-                <span className={`impact-badge impact-${f.impact.toLowerCase().replace(' ', '-')}`}>{f.impact}</span>
-              </div>
-              <p className="feature-desc">{f.description}</p>
-              <div className="feature-meta">
-                <span>Effort: {f.effort}</span>
-                <span className={`priority-badge p-${f.priority.toLowerCase()}`}>{f.priority}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-        {features.length > 6 && (
-          <button className="show-more-btn" onClick={() => setShowAll(!showAll)}>
-            {showAll ? '⬆ Show Less' : `⬇ Show ${features.length - 6} More Features`}
-          </button>
-        )}
-      </div>
-
-      <div className="content-section">
-        <h4 className="content-section-title">🧭 Strategic Directions</h4>
-        <div className="strategies-list">
-          {(phase.strategies || []).map((s, i) => (
-            <div key={i} className="strategy-item">
-              <div className="strategy-name">{s.approach}</div>
-              <p className="strategy-desc">{s.description}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="content-section">
-        <h4 className="content-section-title">⭐ Unique Selling Propositions</h4>
-        <div className="usp-list">
-          {(phase.usps || []).map((usp, i) => (
-            <div key={i} className="usp-item">
-              <span className="usp-num">{i + 1}</span>
-              <span>{usp}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function PrototypeContent({ phase }) {
-  return (
-    <div className="phase-content">
-      <div className="content-section">
-        <h4 className="content-section-title">🎯 MVP Features</h4>
-        <div className="mvp-list">
-          {(phase.mvpFeatures || []).map((f, i) => (
-            <div key={i} className={`mvp-item ${f.mustHave ? 'mvp-must' : 'mvp-nice'}`}>
-              <div className="mvp-header">
-                <span className="mvp-icon">{f.mustHave ? '✅' : '⭕'}</span>
-                <span className="mvp-feature-name">{f.feature}</span>
-                <span className={`mvp-badge ${f.mustHave ? '' : 'mvp-badge-nice'}`}>{f.mustHave ? 'Must Have' : 'Nice to Have'}</span>
-              </div>
-              <p className="mvp-desc">{f.description}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="content-section">
-        <h4 className="content-section-title">🗓️ Product Roadmap</h4>
-        <div className="roadmap">
-          {(phase.roadmap || []).map((r, i) => (
-            <div key={i} className="roadmap-phase">
-              <div className="roadmap-header">
-                <span className="roadmap-phase-label">{r.phase}</span>
-                <span className="roadmap-title">{r.title}</span>
-              </div>
-              <div className="roadmap-items">
-                {r.items.map((item, j) => (
-                  <div key={j} className="roadmap-item">→ {item}</div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="content-section">
-        <h4 className="content-section-title">💰 Pricing Strategy Options</h4>
-        <div className="pricing-grid">
-          {(phase.pricingOptions || []).map((p, i) => (
-            <div key={i} className="pricing-option">
-              <div className="pricing-model">{p.model}</div>
-              <p className="pricing-desc">{p.description}</p>
-              <div className="pricing-split">
-                <div>
-                  {p.pros.map((pro, j) => <div key={j} className="pricing-pro">✓ {pro}</div>)}
-                </div>
-                <div>
-                  {p.cons.map((con, j) => <div key={j} className="pricing-con">✗ {con}</div>)}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="content-section">
-        <h4 className="content-section-title">🛠️ Tech Stack Recommendations</h4>
-        <div className="tech-stack">
-          {Object.entries(phase.techStack || {}).map(([key, vals]) => (
-            <div key={key} className="tech-category">
-              <div className="tech-cat-name">{key.charAt(0).toUpperCase() + key.slice(1)}</div>
-              <div className="tech-tags">
-                {vals.map((t, i) => <span key={i} className="tech-tag">{t}</span>)}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function TestContent({ phase }) {
-  return (
-    <div className="phase-content">
-      <div className="content-section">
-        <h4 className="content-section-title">🔬 Key Assumptions to Test</h4>
-        <div className="assumptions-list">
-          {(phase.assumptions || []).map((a, i) => (
-            <div key={i} className={`assumption-item priority-level-${a.priority.toLowerCase()}`}>
-              <div className="assumption-header">
-                <span className={`assumption-priority ${a.priority.toLowerCase()}`}>{a.priority}</span>
-                <span className="assumption-text">{a.assumption}</span>
-              </div>
-              <div className="assumption-method">Method: {a.method}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="content-section">
-        <h4 className="content-section-title">🧪 Testing Methods</h4>
-        <div className="testing-timeline">
-          {(phase.testingMethods || []).map((tm, i) => (
-            <div key={i} className="testing-item">
-              <div className="testing-method-name">{tm.method}</div>
-              <div className="testing-meta">
-                <span>📅 {tm.timeline}</span>
-                <span>👥 {tm.participants}</span>
-              </div>
-              <div className="testing-goal">Goal: {tm.goal}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="content-section">
-        <h4 className="content-section-title">✅ Success Criteria</h4>
-        <div className="success-list">
-          {(phase.successCriteria || []).map((sc, i) => (
-            <div key={i} className="success-item">
-              <span className="success-check">✓</span>
-              <span>{sc}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="content-section">
-        <h4 className="content-section-title">⚠️ Risk Assessment</h4>
-        <div className="risks-list">
-          {(phase.risks || []).map((r, i) => (
-            <div key={i} className={`risk-item risk-level-${r.level.toLowerCase()}`}>
-              <div className="risk-header">
-                <span className={`risk-badge risk-${r.level.toLowerCase()}`}>{r.level} Risk</span>
-                <span className="risk-text">{r.risk}</span>
-              </div>
-              <div className="risk-mitigation">Mitigation: {r.mitigation}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function RefineContent({ phase }) {
-  return (
-    <div className="phase-content">
-      <div className="content-section">
-        <h4 className="content-section-title">🎯 Iteration Priorities</h4>
-        <div className="iterations-list">
-          {(phase.iterationPriorities || []).map((ip, i) => (
-            <div key={i} className="iteration-item">
-              <div className="iteration-num">#{ip.priority}</div>
-              <div className="iteration-body">
-                <div className="iteration-area">{ip.area}</div>
-                <p className="iteration-desc">{ip.description}</p>
-                <div className="iteration-meta">
-                  <span className={`impact-badge impact-${ip.impact.toLowerCase().replace(' ', '-')}`}>Impact: {ip.impact}</span>
-                  <span className="effort-label">Effort: {ip.effort}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="content-section">
-        <h4 className="content-section-title">🔮 Long-Term Vision</h4>
-        <div className="vision-timeline">
-          {Object.entries(phase.longTermVision || {}).filter(([k]) => k !== 'vision').map(([key, val]) => (
-            <div key={key} className="vision-item">
-              <div className="vision-period">{key === 'year1' ? 'Year 1' : key === 'year2' ? 'Year 2' : 'Year 3'}</div>
-              <div className="vision-desc">{val}</div>
-            </div>
-          ))}
-        </div>
-        {phase.longTermVision?.vision && (
-          <div className="vision-statement">
-            <div className="vs-label">Vision Statement</div>
-            <blockquote className="vs-quote">{phase.longTermVision.vision}</blockquote>
+            ))}
           </div>
-        )}
-      </div>
+        </UIBlock>
+      )
+    }
 
-      <div className="content-section">
-        <h4 className="content-section-title">🎨 UX Improvements</h4>
-        <div className="ux-list">
-          {(phase.uxImprovements || []).map((ux, i) => (
-            <div key={i} className="ux-item">
-              <span className="ux-bullet">◉</span>
-              <span>{ux}</span>
+    if (key === 'matrix') {
+      return (
+        <UIBlock title="MoSCoW Matrix" icon="⚖️" key={key}>
+          <div className="moscow-grid">
+            {Object.entries(value).map(([mKey, mVal]) => (
+              <div key={mKey} className={`moscow-sector sector-${mKey} nm-inset`}>
+                <div className="sector-label">{mKey.toUpperCase()}</div>
+                <div className="sector-items">{mVal.join(', ')}</div>
+              </div>
+            ))}
+          </div>
+        </UIBlock>
+      )
+    }
+
+    if (key === 'steps') {
+      return (
+        <UIBlock title="User Journey Flow" icon="🗺️" key={key}>
+          <div className="journey-flow">
+            {value.map((step, i) => (
+              <div key={i} className="journey-step">
+                <div className="step-point nm-flat">{i + 1}</div>
+                <div className="step-info">
+                  <div className="step-name">{step.step}</div>
+                  <div className="step-emotion">{step.emotion === 'Pos' ? '😊' : step.emotion === 'Neg' ? '😫' : '😐'}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </UIBlock>
+      )
+    }
+
+    if (Array.isArray(value)) {
+      return (
+        <UIBlock title={label} icon="📝" key={key}>
+          <DataList items={value} />
+        </UIBlock>
+      )
+    }
+
+    if (typeof value === 'object') {
+       return (
+         <UIBlock title={label} icon="📊" key={key}>
+            <div className="metrics-grid">
+              {Object.entries(value).map(([k, v]) => (
+                <MetricItem key={k} label={k} value={v} />
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+         </UIBlock>
+       )
+    }
+
+    return (
+      <UIBlock title={label} icon="💡" key={key}>
+        <div className="single-insight nm-inset">{value}</div>
+      </UIBlock>
+    )
+  }
+
+  return (
+    <div className="phase-dynamic-grid">
+      {Object.entries(phase).map(([key, value]) => renderDataField(key, value))}
     </div>
   )
 }
 
-const CONTENT_COMPONENTS = {
-  empathize: EmphasizeContent,
-  define: DefineContent,
-  ideate: IdeateContent,
-  prototype: PrototypeContent,
-  test: TestContent,
-  refine: RefineContent,
-}
-
-export default function PhaseCard({ phaseKey, phase, index, isHighlighted, onActivate, isImmersive }) {
+export default function PhaseCard({ phaseKey, phase, index, isHighlighted, isImmersive }) {
   const [expanded, setExpanded] = useState(isImmersive)
-  const ContentComponent = CONTENT_COMPONENTS[phaseKey]
 
   const toggleExpand = () => {
-    if (isImmersive) return // Always expanded in immersive mode
+    if (isImmersive) return
     setExpanded(prev => !prev)
-    if (!expanded && onActivate) onActivate()
   }
 
   return (
     <motion.article
       className={`phase-card glass depth-3d ${isHighlighted ? 'phase-card--highlighted' : ''} ${isImmersive ? 'phase-card--immersive' : ''}`}
-      style={{ '--phase-primary': phase.primary, '--phase-light': phase.light, '--phase-text': phase.text }}
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.08 }}
-      whileHover={{ y: expanded ? 0 : -10, rotateX: 2, rotateY: -2 }}
+      style={{ 
+        '--phase-primary': phase.primary, 
+        '--phase-light': phase.light, 
+        '--phase-text': phase.text,
+        '--node-index': index 
+      }}
+      initial={{ opacity: 0, scale: 0.9, rotateY: 20 }}
+      animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
     >
       <div className="phase-card-inner-3d">
-        {/* Phase Header */}
-        <div
-          className="phase-card-header depth-layer"
-          style={{ background: phase.primary }}
-          onClick={toggleExpand}
-          role="button"
-          tabIndex={0}
-          aria-expanded={expanded}
-        >
-          <div className="pch-left">
-            <div className="phase-number nm-inset">Phase {String(index + 1).padStart(2, '0')}</div>
-            <div className="phase-emoji animate-float">{phase.emoji}</div>
-            <h3 className="phase-title">{phase.title.toUpperCase()}</h3>
+        {/* Header Section */}
+        <header className="p-card-header" onClick={toggleExpand}>
+          <div className="p-header-top">
+            <div className="p-idx-badge nm-inset">Phase {String(index + 1).padStart(2, '0')}</div>
+            <div className="p-emoji-circle nm-flat animate-float">{phase.emoji}</div>
           </div>
-          {!isImmersive && (
-            <motion.div
-              className="expand-icon"
-              animate={{ rotate: expanded ? 180 : 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              ▾
-            </motion.div>
-          )}
-        </div>
+          <h1 className="p-title-main">{phase.title}</h1>
+          <p className="p-tagline-sub nm-inset">"{phase.tagline}"</p>
+        </header>
 
-        {/* Tagline */}
-        <div className="phase-card-tagline depth-layer">
-          <p className="nm-inset">"{phase.tagline}"</p>
-        </div>
-
-        <div className="phase-body-scrollable custom-scrollbar">
-          {/* Key Insights */}
-          <div className="key-insights depth-layer">
-            <div className="ki-header">KEY INSIGHTS</div>
-            <ul className="ki-list">
+        <div className="p-card-body custom-scrollbar">
+          {/* Executive Summary Section */}
+          <section className="p-section p-summary-section">
+            <h2 className="p-section-heading">Strategic Insights</h2>
+            <div className="insight-cards-grid">
               {(phase.keyInsights || []).map((insight, i) => (
-                <li key={i} className="ki-item nm-flat">
-                  <span className="ki-dot" style={{ background: phase.primary }}></span>
-                  <span>{insight}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Expandable Content */}
-          <div className={`phase-expanded ${isImmersive ? 'always-visible' : ''}`}>
-            {(expanded || isImmersive) && (
-              <div className="phase-expanded-inner depth-layer">
-                {ContentComponent && <ContentComponent phase={phase} />}
-              </div>
-            )}
-          </div>
-
-          {/* Action Items */}
-          <div className="action-items depth-layer">
-            <div className="ai-header">DRIVING ACTION</div>
-            <div className="ai-grid">
-              {(phase.actionItems || []).map((item, i) => (
-                <div key={i} className="ai-item nm-flat">
-                  <span className="ai-arrow">🚀</span>
-                  <div>
-                    <span className="ai-action">{item.action}</span>
-                    <span className="ai-timeline"> • {item.timeline}</span>
-                  </div>
+                <div key={i} className="insight-card nm-flat">
+                  <div className="insight-bullet" style={{ background: phase.primary }} />
+                  <p className="insight-text">{insight}</p>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
+
+          {/* Dynamic Content Deep Dive */}
+          <section className={`p-section p-deep-dive ${expanded ? 'expanded' : ''}`}>
+             <h2 className="p-section-heading">Detailed Breakdown</h2>
+             <DynamicPhaseContent phase={phase} />
+          </section>
+
+          {/* Strategic Roadmap / Action Items */}
+          <section className="p-section p-action-section">
+            <h2 className="p-section-heading">Action Roadmap</h2>
+            <div className="action-roadmap-list">
+              {(phase.actionItems || []).map((item, i) => (
+                <div key={i} className="action-roadmap-item nm-thin">
+                   <div className="action-dot-wrap">
+                      <div className="action-line" />
+                      <div className="action-dot nm-flat">🚀</div>
+                   </div>
+                   <div className="action-content">
+                      <div className="action-verb">{item.action}</div>
+                      <div className="action-meta">Expected Timeline: <span>{item.timeline}</span></div>
+                   </div>
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
 
-        {/* Card Footer - Only show if not immersive or needs toggle */}
         {!isImmersive && (
-          <div className="phase-card-footer depth-layer">
-            <button
-              className="expand-btn nm-flat"
-              style={{ '--phase-primary': phase.primary }}
-              onClick={toggleExpand}
-            >
-              {expanded ? '⬆ Collapse Analysis' : '⬇ View Full Analysis'}
+          <footer className="p-card-footer">
+            <button className="p-expand-btn nm-flat" onClick={toggleExpand}>
+              {expanded ? 'Collapse Matrix' : 'Explore Details'}
             </button>
-            {index < 5 && (
-              <span className="next-phase-hint">Next: {['Define', 'Ideate', 'Prototype', 'Test', 'Refine'][index]} →</span>
-            )}
-          </div>
+          </footer>
         )}
       </div>
     </motion.article>
