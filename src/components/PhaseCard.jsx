@@ -47,6 +47,21 @@ function DynamicPhaseContent({ phase }) {
     const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
     
     // Custom renderers based on key name or value structure
+    if (key === 'kpis' || (key === 'metrics' && Array.isArray(value))) {
+      return (
+        <UIBlock title={label} icon="📈" key={key}>
+          <div className="metrics-grid">
+            {value.map((kpi, i) => (
+              <div key={i} className="metric-card nm-inset">
+                <div className="metric-name">{kpi.metric || 'Performance'}</div>
+                <div className="metric-target">Target: <span className="gold-text">{kpi.target || kpi.value}</span></div>
+              </div>
+            ))}
+          </div>
+        </UIBlock>
+      )
+    }
+
     if (key === 'segments' || key === 'competitors' || key === 'concepts' || key === 'pains') {
       return (
         <UIBlock title={label} icon="🎯" key={key}>

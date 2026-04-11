@@ -146,23 +146,41 @@ export default function InputForm({ onSubmit, onBack }) {
       </div>
 
       <div className="iform-container">
-        <header className="iform-header">
-          <button className="back-btn glass" onClick={handlePrev}>
-            {step === 1 ? '← Home' : '← Back'}
-          </button>
-          <div className="iform-progress">
-             <div className="progress-bar-bg nm-inset">
-               <motion.div 
-                 className="progress-bar-fill" 
-                 initial={{ width: 0 }}
-                 animate={{ width: `${(step / 10) * 100}%` }}
-               />
-             </div>
-             <span className="step-count">STEP {String(step).padStart(2, '0')} / 10</span>
+        <header className="iform-header-sticky glass">
+          <div className="nav-bar-inner">
+            <button 
+              className="nav-btn nav-back-btn" 
+              onClick={handlePrev}
+            >
+              <span className="btn-icon">←</span>
+              <span className="btn-text">{step === 1 ? 'HOME' : 'BACK'}</span>
+            </button>
+
+            <div className="nav-center">
+              <div className="iform-progress">
+                <div className="progress-bar-bg">
+                  <motion.div 
+                    className="progress-bar-fill" 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(step / 10) * 100}%` }}
+                  />
+                </div>
+                <span className="step-count">STEP {String(step).padStart(2, '0')} / 10</span>
+              </div>
+            </div>
+
+            <button 
+              className={`nav-btn nav-next-btn ${!validateStep(step) ? 'disabled' : ''}`}
+              onClick={handleNext}
+              disabled={!validateStep(step)}
+            >
+              <span className="btn-text">{step === 10 ? 'FINALIZE' : 'CONTINUE'}</span>
+              <span className="btn-icon">→</span>
+            </button>
           </div>
         </header>
 
-        <motion.div className="iform-card glass depth-3d" layout>
+        <motion.div className="iform-card glass" layout>
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
@@ -367,11 +385,6 @@ export default function InputForm({ onSubmit, onBack }) {
             </motion.div>
           </AnimatePresence>
 
-          <div className="iform-footer">
-            <button className="next-btn nm-flat" onClick={handleNext}>
-              {step === 10 ? 'LAUNCH 3D ANALYSIS' : 'CONTINUE →'}
-            </button>
-          </div>
         </motion.div>
       </div>
     </div>

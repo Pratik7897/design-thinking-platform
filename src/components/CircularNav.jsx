@@ -84,9 +84,9 @@ export default function CircularNav({ phases, activePhase, onPhaseClick }) {
                 cx={npx}
                 cy={npy}
                 r={isActive ? 22 : 16}
-                className={`cn-node-circle nm-flat ${isActive ? 'active' : ''}`}
-                fill={isActive ? phase.primary : 'white'}
-                stroke={isActive ? 'white' : phase.primary}
+                className={`cn-node-circle glass ${isActive ? 'active' : ''}`}
+                fill={isActive ? phase.primary : 'rgba(255,255,255,0.05)'}
+                stroke={isActive ? 'var(--metallic-gold)' : 'var(--glass-border)'}
                 strokeWidth={isActive ? 3 : 1}
                 animate={{ scale: isActive ? 1.2 : 1 }}
                 whileHover={{ scale: 1.3 }}

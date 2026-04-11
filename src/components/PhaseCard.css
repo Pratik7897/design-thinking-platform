@@ -69,6 +69,7 @@
   margin-bottom: 12px;
   background: linear-gradient(135deg, #FFF 0%, var(--metallic-gold) 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -113,6 +114,41 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-md);
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-md);
+}
+
+.metric-card {
+  padding: 20px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metric-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-target {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.metric-card .gold-text {
+  font-weight: 800;
+  font-size: 16px;
 }
 
 .insight-card {

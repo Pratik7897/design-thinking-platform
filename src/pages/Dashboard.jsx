@@ -197,33 +197,38 @@ export default function Dashboard({ analysis, productData, onNewAnalysis }) {
   const activePhaseKey = PHASE_KEYS[activePhaseIndex]
 
   return (
-    <div className="dashboard nm-bg">
-      <motion.header
-        className="dash-header glass"
-        initial={{ y: -50 }}
-        animate={{ y: 0 }}
-      >
-        <div className="container">
-          <div className="dash-header-inner">
-            <div className="dash-logo">
+    <div className="dashboard">
+      <header className="dash-header-sticky glass">
+        <div className="nav-bar-inner">
+          <button 
+            className="nav-btn nav-back-btn" 
+            onClick={onNewAnalysis}
+          >
+            <span className="btn-icon">←</span>
+            <span className="btn-text">HOME</span>
+          </button>
+
+          <div className="nav-center">
+            <div className="dash-logo-mini">
               <span className="logo-icon">◎</span>
-              <span className="logo-text">ThinkLens</span>
-            </div>
-            <div className="dash-product-info">
-              <span className="dash-product-badge nm-flat">{meta.category}</span>
-              <h2 className="dash-product-name">{meta.productName}</h2>
-            </div>
-            <div className="dash-actions">
-              <button className="dash-btn glass" onClick={handleExport} disabled={exporting}>
-                {exporting ? 'Exporting...' : '📄 PDF'}
-              </button>
-              <button className="dash-btn nm-flat" onClick={onNewAnalysis}>
-                + New
-              </button>
+              <div className="logo-info">
+                <span className="logo-label">{meta.category?.toUpperCase()}</span>
+                <span className="logo-product">{meta.productName}</span>
+              </div>
             </div>
           </div>
+
+          <div className="nav-actions">
+            <button className="nav-btn nav-action-btn glass" onClick={handleExport} disabled={exporting}>
+              <span className="btn-text">{exporting ? 'EXPORTING...' : '📄 PDF'}</span>
+            </button>
+            <button className="nav-btn nav-next-btn" onClick={onNewAnalysis}>
+              <span className="btn-text">NEW</span>
+              <span className="btn-icon">+</span>
+            </button>
+          </div>
         </div>
-      </motion.header>
+      </header>
 
       <main className="dash-main">
         <div className="container overflow-visible">
