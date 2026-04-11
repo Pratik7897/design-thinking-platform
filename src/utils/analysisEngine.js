@@ -234,160 +234,142 @@ function generateFallbackAnalysis(data) {
 
   return {
     metadata: {
-      productName: data.productName,
-      category: data.category,
-      currentStage: data.currentStage,
-      targetMarket: data.targetMarket,
+      productName,
+      category,
       generatedAt: new Date().toISOString(),
     },
     phases: {
-      empathize: {
-        ...PHASE_COLORS.empathize,
-        title: 'Empathize',
-        emoji: '🤝',
-        tagline: 'Understanding users and their needs',
-        personas: generatePersonas(data),
-        painPoints: generatePainPoints(data),
-        empathyMap: {
-          thinks: [`Is ${productName} actually worth my time and financial investment?`, `Will this reliably solve my specific struggles with ${category.toLowerCase()}?`, 'Can I trust this brand to support me long-term?'],
-          feels: [`Deeply frustrated with the fragmented state of current ${category.toLowerCase()} solutions`, `Cautiously optimistic about the potential of a better way with ${productName}`, 'Anxious about experiencing buyer\'s remorse or adoption friction'],
-          says: [`"I just need something related to ${category.toLowerCase()} that actually works reliably"`, '"Why is every existing product in this space so complicated or limited?"', '"I wish there was one cohesive tool that finally does it all"'],
-          does: [`Researches ${productName} and alternatives extensively before committing`, 'Relies heavily on peer reviews, unboxings, and community social proof', 'Often sticks with the "Devil they know" due to the high mental cost of switching'],
-        },
-        keyInsights: [
-          `Potential buyers of ${productName} aren't just looking for another ${category.toLowerCase()} option — they want a measurable improvement to their daily routine.`,
-          `Your biggest competitor isn't just other ${category.toLowerCase()} brands, but users choosing to stick with their current familiar habits.`,
-          `When switching to a new solution like ${productName}, establishing immediate emotional trust is critical for early adoption.`,
-          `The initial unboxing and first-use experience of ${productName} will overwhelmingly dictate long-term user retention.`,
-          `If ${targetMarket} push back on the pricing of ${productName}, it means they don't yet fully grasp its unique value proposition.`,
-        ],
-        actionItems: [
-          { action: `Conduct 10 dedicated user interviews with individuals matching the ${targetMarket} demographic`, timeline: 'Week 1-2' },
-          { action: `Create a validated empathy map for ${productName} heavily grounded in actual field data, not assumptions`, timeline: 'Week 2' },
-          { action: `Establish robust feedback channels that are visible to users from day one of the ${productName} beta`, timeline: 'Launch' },
-        ],
-      },
-      define: {
-        ...PHASE_COLORS.define,
-        title: 'Define',
+      problem_definition: {
+        ...PHASE_COLORS.problem_definition,
+        title: 'Problem Definition',
         emoji: '🎯',
-        tagline: 'Synthesizing insights into clear problem statements',
-        ...generateProblemStatement(data),
-        valueProposition: `${productName} directly empowers ${targetMarket} who struggle with outdated ${category.toLowerCase()} methods by providing a seamless, intelligent solution that delivers measurable results immensely faster than any legacy alternative.`,
-        marketOpportunity: {
-          tam: `Total Addressable Market: Exceptionally large and rapidly growing footprint in the broader ${category} landscape.`,
-          sam: `Serviceable Addressable Market: Laser focus on the specific ${targetMarket} vertical where ${productName}'s differentiation is absolute strongest.`,
-          som: `Serviceable Obtainable Market: Aggressively target 0.5-2% of the SAM in Year 1 as an initial highly realistic capture target for ${productName}.`,
-        },
-        keyInsights: [
-          `The problem is starkly defined: ${targetMarket} currently lack a single, reliable ${category.toLowerCase()} solution that delivers without heavy compromises.`,
-          `The market timing for ${productName} is ideal, as awareness of poor legacy alternatives is peaking among consumers.`,
-          `To succeed, ${productName}'s core value proposition must pass the 'So what?' test instantly when presented to fresh eyes.`,
-          `Hitting product-market fit for ${productName} requires hitting strict baseline performance metrics tied to real business outcomes.`,
-          `There is highly visible white space to position ${productName} as a specialized, premium solution rather than fighting in a race to the bottom.`,
-        ],
-        actionItems: [
-          { action: `Validate the core ${productName} Problem-of-View statement with 5+ deeply entrenched potential customers`, timeline: 'Week 2-3' },
-          { action: `Finalize and document the strict success KPIs for ${productName} before writing code or manufacturing`, timeline: 'Week 1' },
-          { action: `Map the precise competitive landscape of ${category.toLowerCase()} and weaponize your unique differentiation angle`, timeline: 'Week 2' },
-        ],
+        tagline: 'Defining the boundaries of the challenge',
+        scope: `Analyze the ${category} space to identify underserved needs for ${targetMarket}.`,
+        constraints: ['Market saturation', 'Technical feasibility', 'User adoption friction'],
+        coreProblem: `Existing ${category} solutions are too complex for ${targetMarket}.`,
+        hmw: [`How might we simplify the core ${productName} experience?`, 'How might we reduce onboarding time?'],
+        keyInsights: [`${targetMarket} value simplicity over feature density.`, `The ${category} market is currently fragmented.`],
+        actionItems: [{ action: 'Conduct stakeholder interviews', timeline: 'Week 1' }]
       },
-      ideate: {
+      user_segmentation: {
+        ...PHASE_COLORS.user_segmentation,
+        title: 'User Segmentation',
+        emoji: '👥',
+        tagline: 'Identifying high-value user clusters',
+        segments: [
+          { name: 'Busy Professionals', description: 'Seeking efficiency and speed.', value: 'High' },
+          { name: 'Casual Explorers', description: 'Aesthetic and trend-driven.', value: 'Medium' }
+        ],
+        targetArchetype: 'The Efficiency-Seeker',
+        keyInsights: ['Segment A represents 40% of the market.', 'Segment B is growing rapidly.'],
+        actionItems: [{ action: 'Define detailed user personas', timeline: 'Week 2' }]
+      },
+      empathy_mapping: {
+        ...PHASE_COLORS.empathy_mapping,
+        title: 'Empathy Mapping',
+        emoji: '🤝',
+        tagline: 'Visualizing user attitudes and behaviors',
+        thinks: [`Is ${productName} worth it?`, 'Will this solve my pain?'],
+        feels: ['Frustrated with current tools', 'Optimistic about new solutions'],
+        says: ['"I need a better way to do this."', '"The current tools are too slow."'],
+        does: ['Searches for reviews', 'Asks peers for recommendations'],
+        keyInsights: ['Users feel overwhelmed by current options.', 'Trust is built through peer validation.'],
+        actionItems: [{ action: 'Validate empathy map with users', timeline: 'Week 2' }]
+      },
+      pain_point_analysis: {
+        ...PHASE_COLORS.pain_point_analysis,
+        title: 'Pain Point Analysis',
+        emoji: '⚡',
+        tagline: 'Quantifying the user\'s struggle',
+        pains: [
+          { issue: 'High cost of alternatives', impact: 'High', frequency: 'Constant' },
+          { issue: 'Steep learning curve', impact: 'Medium', frequency: 'Initial' }
+        ],
+        rootCauses: ['Outdated legacy systems', 'Lack of user-centric design'],
+        keyInsights: ['Cost is the primary barrier.', 'Workflow friction causes churn.'],
+        actionItems: [{ action: 'Map pain points to feature solutions', timeline: 'Week 3' }]
+      },
+      competitive_analysis: {
+        ...PHASE_COLORS.competitive_analysis,
+        title: 'Competitive Analysis',
+        emoji: '⚔️',
+        tagline: 'Mapping the landscape of alternatives',
+        competitors: [
+          { name: 'Legacy Leader', advantage: 'Brand recognition', vulnerability: 'Slow to innovate' },
+          { name: 'Niche Player', advantage: 'Deep features', vulnerability: 'Expensive' }
+        ],
+        uniqueMoat: `Superior UX and lower latency for ${productName}.`,
+        keyInsights: ['Competitors are ignoring the low-end market.', 'Digital transformation is a key driver.'],
+        actionItems: [{ action: 'Monitor competitor feature releases', timeline: 'Ongoing' }]
+      },
+      ideation: {
         ...PHASE_COLORS.ideate,
-        title: 'Ideate',
+        title: 'Ideation',
         emoji: '💡',
-        tagline: 'Generating creative solutions and possibilities',
-        ...generateIdeas(data),
-        keyInsights: [
-          `The highest-impact features for ${productName} are precisely those that eliminate the most tedious work for ${targetMarket} — start extremely smart.`,
-          `Organic Product-Led Growth for ${productName} acts as a massive force multiplier if you embed an inherent viral or sharing loop.`,
-          `In the crowded ${category.toLowerCase()} arena, being completely flawless at a single dimension beats being mediocre at ten different features.`,
-          `The best marketing narrative for ${productName} will intrinsically connect its technical specs to a specific, highly emotional outcome for the user.`,
-          `Positioning ${productName} exclusively for ${targetMarket} early on creates infinitely stronger traction than trying to please everyone.`,
+        tagline: 'Generating disruptive solution paths',
+        concepts: [
+          { name: 'Gamified Interaction', description: 'Drive engagement through rewards.', impact: 'High' },
+          { name: 'Social Integration', description: 'Leverage peer networks.', impact: 'Medium' }
         ],
-        actionItems: [
-          { action: `Rigorously prioritize ${productName} features using a strict effort/impact matrix with the core team`, timeline: 'Week 2' },
-          { action: `Build rapid interactive prototypes for the explicit top 3 differentiating ideas required to test the ${category} market`, timeline: 'Week 3-4' },
-          { action: `Identify and perfectly script the single "WOW moment" that ${productName} MUST deliver to a user within their first 5 minutes`, timeline: 'Week 1' },
-        ],
+        blueSkyIdea: `An AI-first ${category} oracle that predicts user needs.`,
+        keyInsights: ['Simple ideas often have the highest impact.', 'Cross-industry inspiration is vital.'],
+        actionItems: [{ action: 'Prototype the top 3 concepts', timeline: 'Week 4' }]
       },
-      prototype: {
-        ...PHASE_COLORS.prototype,
-        title: 'Prototype',
-        emoji: '🛠️',
-        tagline: 'Creating tangible representations and launch plans',
-        ...generatePrototypePlan(data),
-        techStack: {
-          frontend: ['Modern Web / Tactile UI', 'Responsive Frameworks', 'Lightning-Fast Load Speeds', 'Fluid Interactive Animations'],
-          backend: ['Robust Data Engine', 'Scalable Cloud DBs', 'Real-Time Sync Infrastructure', 'Bank-Grade Security Protocols'],
-          infrastructure: ['Global Edge Delivery', 'Automated CI/CD Pipelines', 'Resilient Load Balancing', 'Deep Telemetry & Monitoring'],
+      feature_prioritization: {
+        ...PHASE_COLORS.feature_prioritization,
+        title: 'Feature Prioritization',
+        emoji: '⚖️',
+        tagline: 'Defining the path to value',
+        matrix: {
+          must: ['Core Value Flow', 'Security'],
+          should: ['Analytics', 'Custom Themes'],
+          could: ['Social Sharing'],
+          wont: ['Legacy Support']
         },
-        keyInsights: [
-          `The MVP for ${productName} must indeed be minimum to validate early assumptions, but absolutely not a minimum excuse to ship something broken.`,
-          `Your prototype testing should hyper-focus on exactly how smoothly ${productName} integrates into ${targetMarket}'s existing environments.`,
-          `Price-resistance testing for ${productName} is just as critical as feature testing—and should commence during the prototype phase.`,
-          `Choosing a highly flexible architecture for ${productName} now will actively prevent catastrophic rewrite costs as your footprint scales.`,
-          `Mapping the hyper-specific user journey during ${productName} prototype sessions will reliably expose the invisible friction points.`,
-        ],
-        actionItems: [
-          { action: `Draft high-fidelity wireframes or CADs for absolutely all core ${productName} experiences before deeply committing resources`, timeline: 'Week 2-3' },
-          { action: `Execution of a hard pricing validation experiment leveraging 20 authentic profiles from ${targetMarket}`, timeline: 'Week 3' },
-          { action: `Establish an unbreakable staging environment and deployment pipeline to ensure ${productName} iterations fly smoothly`, timeline: 'Week 1-2' },
-        ],
+        complexityVsValue: 'Highest value lies in the core workflow automation.',
+        keyInsights: ['Avoid feature bloat in the MVP.', 'Prioritize based on user pain severity.'],
+        actionItems: [{ action: 'Finalize the MVP feature list', timeline: 'Week 3' }]
       },
-      test: {
-        ...PHASE_COLORS.test,
-        title: 'Test',
+      user_journey_mapping: {
+        ...PHASE_COLORS.user_journey_mapping,
+        title: 'User Journey Mapping',
+        emoji: '🗺️',
+        tagline: 'Visualizing the end-to-end experience',
+        steps: [
+          { step: 'Awareness', action: 'Sees an ad', emotion: 'Neu', insight: 'First touchpoint' },
+          { step: 'Conversion', action: 'Signs up', emotion: 'Pos', insight: 'Aha moment' }
+        ],
+        magicMoment: 'The moment the first result is generated.',
+        keyInsights: ['Friction is highest during setup.', 'Personalization increases retention.'],
+        actionItems: [{ action: 'Polish the conversion flow', timeline: 'Week 5' }]
+      },
+      prototyping_strategy: {
+        ...PHASE_COLORS.prototyping_strategy,
+        title: 'Prototyping Strategy',
+        emoji: '🛠️',
+        tagline: 'Minimum viable paths to learning',
+        focus: 'Validating the core interaction model.',
+        lowFi: ['Paper sketches', 'Lo-fi wireframes'],
+        highFi: ['Interactive Figma prototype', 'React-based MVP'],
+        keyFlow: 'Onboarding -> First Success',
+        keyInsights: ['Rapid iteration prevents costly rebuilds.', 'Feedback should be gathered early.'],
+        actionItems: [{ action: 'Build the clickable prototype', timeline: 'Week 4-5' }]
+      },
+      validation_feedback: {
+        ...PHASE_COLORS.validation_feedback,
+        title: 'Validation & Feedback',
         emoji: '✓',
-        tagline: 'Validating assumptions through real-world feedback',
-        ...generateTestingPlan(data),
-        successCriteria: [
-          `60%+ of beta testers effectively complete their first intended workflow with ${productName} without requiring manual intervention`,
-          `An NPS score solidly above 40 after users have spent their first 30 days integrating ${productName}`,
-          `20%+ of trial users eagerly commit to full purchase or subscription of ${productName} within 90 days`,
-          `Less than 10% abandonment rate globally in the first 60 days of active ${productName} usage`,
-          `3+ organic, unprompted referrals or social shares originating from every 10 highly active users`,
+        tagline: 'Closing the loop with real-world signals',
+        kpis: [
+          { metric: 'Activation Rate', target: '>40%' },
+          { metric: 'Retention Rate', target: '>20% after 30 days' }
         ],
-        keyInsights: [
-          `Test your riskiest assumptions regarding ${productName} first — primarily whether ${targetMarket} will actually break their existing habits to use it.`,
-          `Deep qualitative user interviews will expose precisely WHY users cherish or abandon ${productName}; the quantitative dashboard just tells you how many.`,
-          `A/B testing the positioning of ${productName} is only useful once you have locked in a concrete hypothesis concerning user motivation.`,
-          `Mastering exactly why users abandon ${productName} in early stages is significantly more lucrative than analyzing why they briefly signed up.`,
-          `Overjoyed early adopters in the ${category.toLowerCase()} community will inevitably become your most lethal marketing weaponry.`,
-        ],
-        actionItems: [
-          { action: `Recruit exactly 15 razor-targeted interview candidates heavily active in ${category.toLowerCase()} just prior to launch`, timeline: 'Week 1' },
-          { action: `Embed behavioral analytics tracking before absolutely any public user lays eyes on ${productName}`, timeline: 'Week 1-2' },
-          { action: `Formulate an irrefutable hypothesis for every single A/B test run on ${productName} to ensure actionable learnings`, timeline: 'Ongoing' },
-        ],
-      },
-      refine: {
-        ...PHASE_COLORS.refine,
-        title: 'Refine',
-        emoji: '🔄',
-        tagline: 'Iterating based on insights for continuous improvement',
-        ...generateRefinementPlan(data),
-        uxImprovements: [
-          `Streamline the initial setup flow of ${productName} to slash user cognitive overwhelm by roughly 40%`,
-          `Integrate progressive disclosure for incredibly advanced features, ensuring the central ${category.toLowerCase()} utility takes precedence`,
-          `Deploy immediate skeleton loading states or tactile feedback to massively elevate the perceived performance of ${productName}`,
-          `Bake highly contextual help logic organically into the UI to permanently reduce the volume of beginner support tickets`,
-          `Implement lightning-fast shortcuts entirely designed to accommodate power users scaling their throughput with ${productName}`,
-        ],
-        keyInsights: [
-          `The absolute highest-performing teams operating in ${category.toLowerCase()} ship improvements weekly based strictly on field feedback, not internal whims.`,
-          `Do not attempt to optimize the tertiary features of ${productName} that users naturally ignore — ruthlessly strip them out instead.`,
-          `Core reliability and sheer speed of ${productName} will statistically always possess a higher ROI ceiling than tacking on new features.`,
-          `The foundational structural decisions made to accommodate the first 100 users of ${productName} will actively dictate how easily you hit 100,000.`,
-          `The overarching long-term vision for ${productName} should radically inspire the team, but the immediate iteration sprint must be brutally metric-driven.`,
-        ],
-        actionItems: [
-          { action: `Institute unbreakable weekly product rituals for ${productName}: harsh metric reviews, targeted user interviews, and team retrospectives`, timeline: 'Month 1+' },
-          { action: `Publish a highly transparent public product roadmap to perfectly align expectations and weaponize community engagement around ${productName}`, timeline: 'Month 2' },
-          { action: `Implement a formal, unforgiving quarterly strategic review explicitly chained to ${productName}'s core OKRs`, timeline: 'Quarter 1' },
-        ],
-      },
-    },
+        testPlan: 'Run a closed beta with 50 targeted users.',
+        fallbackPlan: 'Pivot to the secondary segment if acquisition is slow.',
+        keyInsights: ['Success is measured by behavior, not praise.', 'Negative feedback is the most valuable.'],
+        actionItems: [{ action: 'Schedule beta user interviews', timeline: 'Ongoing' }]
+      }
+    }
   }
 }
 
@@ -402,7 +384,7 @@ export async function generateAnalysis(data) {
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
+      model: "gemini-1.5-flash", 
       generationConfig: { responseMimeType: "application/json" }
     });
 
