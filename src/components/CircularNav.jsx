@@ -118,7 +118,3 @@ export default function CircularNav({ phases, activePhase, onPhaseClick }) {
     </div>
   )
 }
-      </svg>
-    </div>
-  )
-}
