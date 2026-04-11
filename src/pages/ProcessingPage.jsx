@@ -3,12 +3,16 @@ import { motion, AnimatePresence } from 'framer-motion'
 import './ProcessingPage.css'
 
 const PHASES = [
-  { name: 'Empathize', emoji: '🤝', color: '#FFD966', message: 'Mapping user emotions and pain points...' },
-  { name: 'Define', emoji: '🎯', color: '#FF9B85', message: 'Synthesizing insights into problem statements...' },
-  { name: 'Ideate', emoji: '💡', color: '#E975BA', message: 'Generating creative solutions and ideas...' },
-  { name: 'Prototype', emoji: '🛠️', color: '#5B7FB0', message: 'Building your prototype and go-to-market plan...' },
-  { name: 'Test', emoji: '✓', color: '#4DBFB5', message: 'Creating validation and testing frameworks...' },
-  { name: 'Refine', emoji: '🔄', color: '#A8B5C4', message: 'Defining iteration priorities and growth strategy...' },
+  { name: 'Problem Definition', emoji: '🎯', color: 'var(--p1-define)', message: 'Scoping deep market context and boundaries...' },
+  { name: 'Research & Discovery', emoji: '🔍', color: 'var(--p2-research)', message: 'Auditing competitors and user ecosystem...' },
+  { name: 'User Segmentation', emoji: '👥', color: 'var(--p3-segment)', message: 'Architecting detailed user personas...' },
+  { name: 'Journey Mapping', emoji: '🗺️', color: 'var(--p4-journey)', message: 'Detailing micro-moments and friction points...' },
+  { name: 'Ideation & Strategy', emoji: '💡', color: 'var(--p5-ideate)', message: 'Synthesizing feature ecosystems...' },
+  { name: 'Wireframing', emoji: '🎨', color: 'var(--p6-wireframe)', message: 'Drafting visual blueprints and structures...' },
+  { name: 'Tech Ecosystem', emoji: '⚙️', color: 'var(--p7-tech)', message: 'Designing infrastructure and tech stack...' },
+  { name: 'Business Model', emoji: '💰', color: 'var(--p8-business)', message: 'Validation revenue and growth viability...' },
+  { name: 'Testing & Validation', emoji: '🧪', color: 'var(--p9-test)', message: 'Auditing hypotheses and validation loops...' },
+  { name: 'Final Refinement', emoji: '🚀', color: 'var(--p10-refine)', message: 'Finalizing 10-phase strategy report...' },
 ]
 
 export default function ProcessingPage({ productName }) {
@@ -25,7 +29,7 @@ export default function ProcessingPage({ productName }) {
         clearInterval(interval)
         return prev
       })
-    }, 1200)
+    }, 1000)
     return () => clearInterval(interval)
   }, [])
 
@@ -40,11 +44,11 @@ export default function ProcessingPage({ productName }) {
             className="proc-orb-3d"
             style={{ '--orb-color': p.color }}
             animate={{
-              scale: currentPhase === i ? [1, 1.4, 1] : 0.8,
-              opacity: currentPhase === i ? 0.6 : 0.1,
-              z: currentPhase === i ? 50 : 0
+              scale: currentPhase === i ? [1, 1.5, 1] : 0.8,
+              opacity: currentPhase === i ? 0.7 : 0.1,
+              z: currentPhase === i ? 100 : 0
             }}
-            transition={{ duration: 1.2, repeat: currentPhase === i ? Infinity : 0 }}
+            transition={{ duration: 0.8, repeat: currentPhase === i ? Infinity : 0 }}
           />
         ))}
       </div>
@@ -52,8 +56,8 @@ export default function ProcessingPage({ productName }) {
       <div className="proc-container-immersive">
         {/* Logo */}
         <div className="proc-logo glass">
-          <span className="logo-icon">◎</span>
-          <span className="logo-text">ThinkLens 3D</span>
+          <span className="logo-icon" style={{ color: PHASES[currentPhase].color }}>◎</span>
+          <span className="logo-text">ThinkLens Pro</span>
         </div>
 
         {/* Central Visualization */}
@@ -63,16 +67,16 @@ export default function ProcessingPage({ productName }) {
               <motion.div
                 key={currentPhase}
                 className="proc-phase-status"
-                initial={{ rotateY: 90, opacity: 0 }}
-                animate={{ rotateY: 0, opacity: 1 }}
-                exit={{ rotateY: -90, opacity: 0 }}
-                transition={{ duration: 0.5 }}
+                initial={{ rotateY: 90, opacity: 0, scale: 0.8 }}
+                animate={{ rotateY: 0, opacity: 1, scale: 1 }}
+                exit={{ rotateY: -90, opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.4, type: 'spring' }}
               >
-                <div className="status-emoji nm-inset" style={{ color: PHASES[currentPhase].color }}>
+                <div className="status-emoji" style={{ background: PHASES[currentPhase].color }}>
                   {PHASES[currentPhase].emoji}
                 </div>
                 <div className="status-info">
-                  <div className="status-label">CURRENT PHASE</div>
+                  <div className="status-label">PHASE {currentPhase + 1} OF 10</div>
                   <div className="status-name">{PHASES[currentPhase].name}</div>
                 </div>
               </motion.div>
@@ -80,22 +84,22 @@ export default function ProcessingPage({ productName }) {
           </div>
 
           <div className="proc-orbit-rings">
-             <div className="orbit-ring ring-1"></div>
+             <div className="orbit-ring ring-1" style={{ borderColor: PHASES[currentPhase].color }}></div>
              <div className="orbit-ring ring-2"></div>
           </div>
         </div>
 
         {/* Context Info */}
         <div className="proc-info-card glass">
-          <div className="proc-product-badge nm-inset">
-            ANALYZING: {productName || 'UNNAMED PRODUCT'}
+          <div className="proc-product-badge nm-thin">
+            STRATEGY ENGINE: {productName?.toUpperCase() || 'NEW ANALYSIS'}
           </div>
           <AnimatePresence mode="wait">
             <motion.p
               key={currentPhase}
               className="proc-message-text"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
               {PHASES[currentPhase].message}
@@ -106,10 +110,10 @@ export default function ProcessingPage({ productName }) {
         {/* Immersive Progress */}
         <div className="proc-progress-immersive">
           <div className="progress-stats">
-            <span>{PHASES[currentPhase].name}</span>
-            <span>{Math.round(progress)}%</span>
+            <span style={{ color: PHASES[currentPhase].color, fontWeight: 900 }}>{PHASES[currentPhase].name.toUpperCase()}</span>
+            <span style={{ opacity: 0.6 }}>{Math.round(progress)}% COMPLETE</span>
           </div>
-          <div className="progress-track-3d nm-inset">
+          <div className="progress-track-3d nm-thin">
             <motion.div
               className="progress-fill-3d"
               style={{ background: PHASES[currentPhase].color }}

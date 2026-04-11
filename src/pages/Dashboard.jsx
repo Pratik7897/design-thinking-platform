@@ -58,59 +58,137 @@ export default function Dashboard({ analysis, productData, onNewAnalysis }) {
       pdf.setFontSize(12)
       pdf.setTextColor(160, 160, 180)
       pdf.text(`Industry Context: ${meta.category || 'N/A'}`, pageW / 2, 100, { align: 'center' })
-      pdf.text(`10-Phase Deep Analysis`, pageW / 2, 112, { align: 'center' })
+      pdf.text(`Professional 10-Phase Strategy Framework`, pageW / 2, 112, { align: 'center' })
       pdf.text(`Generated on: ${new Date(meta.generatedAt).toLocaleDateString()}`, pageW / 2, 124, { align: 'center' })
 
-      // Content pages
+      // PDF Content State
+      let currentY = 0
+      const contentMargin = 15
+      const contentWidth = pageW - 30
+
+      const checkNewPage = (neededRows = 20) => {
+        if (currentY + neededRows > 280) {
+          pdf.addPage()
+          currentY = 20
+          return true
+        }
+        return false
+      }
+
       PHASE_KEYS.forEach((key, idx) => {
         const phase = phases[key]
         if (!phase) return
         
         pdf.addPage()
+        currentY = 15
 
         // Phase Header
-        pdf.setFillColor(phase.primary || '#000000')
-        pdf.rect(0, 0, pageW, 40, 'F')
+        pdf.setFillColor(phase.primary || '#2563EB')
+        pdf.rect(0, 0, pageW, 35, 'F')
         pdf.setTextColor(255, 255, 255)
-        pdf.setFontSize(20)
+        pdf.setFontSize(22)
         pdf.setFont('helvetica', 'bold')
-        pdf.text(`${idx + 1}. ${(phase.title || key).toUpperCase()}`, 15, 25)
+        pdf.text(`${idx + 1}. ${(phase.title || key).toUpperCase()}`, contentMargin, 24)
 
+        currentY = 50
+        
         // Tagline
         pdf.setTextColor(100, 100, 120)
-        pdf.setFontSize(11)
+        pdf.setFontSize(12)
         pdf.setFont('helvetica', 'italic')
-        pdf.text(phase.tagline || '', 15, 52)
+        pdf.text(`"${phase.tagline || ''}"`, contentMargin, currentY)
+        currentY += 15
 
-        // Sections
+        // SECTION: Strategic Insights
         pdf.setTextColor(26, 26, 46)
         pdf.setFont('helvetica', 'bold')
         pdf.setFontSize(14)
-        pdf.text('Key Insights', 15, 68)
-
-        pdf.setFont('helvetica', 'normal')
-        pdf.setFontSize(10)
-        const insights = phase.keyInsights || []
-        insights.forEach((insight, i) => {
-          const lines = pdf.splitTextToSize(`• ${insight}`, pageW - 30)
-          pdf.text(lines, 15, 78 + i * 14)
-        })
-
-        // Action Items
-        const actionY = 78 + (insights.length * 14) + 10
-        pdf.setFont('helvetica', 'bold')
-        pdf.text('Strategic Action Items', 15, actionY)
+        pdf.text('STRATEGIC INSIGHTS', contentMargin, currentY)
+        currentY += 8
         
         pdf.setFont('helvetica', 'normal')
-        const items = phase.actionItems || []
-        items.forEach((item, i) => {
-          pdf.text(`→ ${item.action} (${item.timeline})`, 15, actionY + 8 + i * 8)
+        pdf.setFontSize(10)
+        ;(phase.keyInsights || []).forEach(insight => {
+          checkNewPage(10)
+          const lines = pdf.splitTextToSize(`• ${insight}`, contentWidth)
+          pdf.text(lines, contentMargin, currentY)
+          currentY += (lines.length * 5) + 2
+        })
+
+        // SECTION: Detailed Deep Dive (Dynamic Fields)
+        currentY += 10
+        pdf.setFont('helvetica', 'bold')
+        pdf.setFontSize(14)
+        pdf.text('DETAILED BREAKDOWN', contentMargin, currentY)
+        currentY += 8
+
+        pdf.setFontSize(10)
+        Object.entries(phase).forEach(([fKey, fVal]) => {
+          // Skip known/structural fields
+          if (['title', 'tagline', 'keyInsights', 'actionItems', 'primary', 'dark', 'light', 'text', 'emoji'].includes(fKey)) return
+          if (!fVal) return
+
+          checkNewPage(15)
+          const label = fKey.replace(/([A-Z])/g, ' $1').toUpperCase()
+          pdf.setFont('helvetica', 'bold')
+          pdf.setTextColor(phase.primary || '#2563EB')
+          pdf.text(label, contentMargin, currentY)
+          currentY += 6
+          
+          pdf.setFont('helvetica', 'normal')
+          pdf.setTextColor(60, 60, 80)
+          
+          if (Array.isArray(fVal)) {
+            fVal.forEach(item => {
+              checkNewPage(8)
+              const txt = typeof item === 'string' ? item : (item.name || item.step || item.action || JSON.stringify(item))
+              const lines = pdf.splitTextToSize(`  - ${txt}`, contentWidth - 10)
+              pdf.text(lines, contentMargin + 5, currentY)
+              currentY += (lines.length * 5) + 1
+            })
+          } else if (typeof fVal === 'object') {
+            Object.entries(fVal).forEach(([k, v]) => {
+              checkNewPage(8)
+              const valText = Array.isArray(v) ? v.join(', ') : String(v)
+              const lines = pdf.splitTextToSize(`  ${k}: ${valText}`, contentWidth - 10)
+              pdf.text(lines, contentMargin + 5, currentY)
+              currentY += (lines.length * 5) + 1
+            })
+          } else {
+            const lines = pdf.splitTextToSize(`  ${String(fVal)}`, contentWidth - 10)
+            pdf.text(lines, contentMargin + 5, currentY)
+            currentY += (lines.length * 5) + 2
+          }
+          currentY += 4
+        })
+
+        // SECTION: Action Roadmap
+        checkNewPage(30)
+        currentY += 5
+        pdf.setFont('helvetica', 'bold')
+        pdf.setFontSize(14)
+        pdf.setTextColor(26, 26, 46)
+        pdf.text('ACTION ROADMAP', contentMargin, currentY)
+        currentY += 8
+        
+        pdf.setFont('helvetica', 'normal')
+        pdf.setFontSize(10)
+        ;(phase.actionItems || []).forEach(item => {
+          checkNewPage(10)
+          pdf.text(`→ ${item.action}`, contentMargin, currentY)
+          pdf.setFont('helvetica', 'italic')
+          pdf.setTextColor(150, 150, 150)
+          pdf.text(`Timeline: ${item.timeline}`, contentMargin + 120, currentY)
+          pdf.setFont('helvetica', 'normal')
+          pdf.setTextColor(60, 60, 80)
+          currentY += 8
         })
       })
 
-      pdf.save(`${meta.productName || 'analysis'}-strategy.pdf`)
+      pdf.save(`${meta.productName.replace(/\s+/g, '_')}_Strategy_Report.pdf`)
     } catch (err) {
-      console.error(err)
+      console.error('PDF Export Error:', err)
+      alert('Failed to generate PDF. Please check console for details.')
     } finally {
       setExporting(false)
     }
