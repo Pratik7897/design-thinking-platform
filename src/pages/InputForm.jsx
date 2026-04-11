@@ -155,10 +155,10 @@ export default function InputForm({ onSubmit, onBack }) {
                <motion.div 
                  className="progress-bar-fill" 
                  initial={{ width: 0 }}
-                 animate={{ width: `${(step / 6) * 100}%` }}
+                 animate={{ width: `${(step / 10) * 100}%` }}
                />
              </div>
-             <span className="step-count">STEP 0{step} / 06</span>
+             <span className="step-count">STEP {String(step).padStart(2, '0')} / 10</span>
           </div>
         </header>
 
