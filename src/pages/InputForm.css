@@ -1,22 +1,22 @@
 .iform-page {
   min-height: 100vh;
-  padding: 80px 0 120px;
-  background: var(--bg-primary);
+  padding: 80px 0;
+  background: transparent;
+  position: relative;
+  z-index: 10;
 }
 
 .iform-container {
-  max-width: 900px;
+  max-width: 1200px; /* Improved desktop width */
   margin: 0 auto;
-  padding: 0 32px;
-  position: relative;
-  z-index: 10;
+  padding: 0 var(--space-xl);
 }
 
 .iform-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 60px;
+  margin-bottom: 40px;
   gap: 40px;
 }
 
@@ -24,159 +24,203 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
 }
 
 .progress-bar-bg {
-  height: 8px;
+  height: 6px;
   border-radius: 4px;
-  background: var(--glass-bg);
-  padding: 0;
+  background: rgba(255, 255, 255, 0.05);
   overflow: hidden;
   border: 1px solid var(--glass-border);
 }
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #2563EB 0%, #7C3AED 100%);
+  background: linear-gradient(90deg, var(--graphite) 0%, var(--metallic-gold) 100%);
   border-radius: 4px;
 }
 
 .step-count {
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 900;
   color: var(--text-muted);
-  letter-spacing: 2px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .iform-card {
-  border-radius: 32px;
-  min-height: 600px;
+  border-radius: var(--radius-lg);
+  min-height: auto; /* Allow dynamic height */
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(20px);
+  background: rgba(10, 10, 10, 0.8);
   border: 1px solid var(--glass-border);
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--glass-shadow);
 }
 
 .step-content {
-  padding: 80px 100px;
+  padding: 60px 80px;
   flex: 1;
 }
 
 .step-title {
-  font-size: 48px;
-  font-weight: 900;
+  font-size: 42px;
+  font-weight: 800;
   color: var(--text-primary);
-  margin-bottom: 16px;
-  letter-spacing: -2.5px;
-  line-height: 1;
+  margin-bottom: 12px;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
 }
 
 .step-subtitle {
-  font-size: 18px;
-  color: var(--text-muted);
-  margin-bottom: 48px;
-  font-weight: 500;
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
 }
 
 .field-group {
   display: flex;
   flex-direction: column;
-  animation: fadeInStep 0.5s ease-out;
-}
-
-@keyframes fadeInStep {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 .glass-input {
-  background: white !important;
+  background: rgba(255, 255, 255, 0.03) !important;
   border: 1px solid var(--glass-border) !important;
-  font-size: 24px !important;
-  padding: 24px 32px !important;
-  border-radius: 20px !important;
+  font-size: 20px !important;
+  padding: 20px 24px !important;
+  border-radius: var(--radius-md) !important;
   color: var(--text-primary) !important;
-  font-weight: 500 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: var(--transition-smooth) !important;
 }
 
 .glass-input:focus {
-  border-color: #2563EB !important;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important;
-  transform: translateY(-2px);
+  border-color: var(--metallic-gold) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
 }
 
-/* MCQ GRID */
+/* MCQ GRID - Desktop Optimized */
 .mcq-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
 }
 
 .mcq-card {
-  background: white;
-  padding: 32px 24px;
-  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 24px 16px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
+  gap: 12px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  transition: var(--transition-smooth);
 }
 
 .mcq-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
-  border-color: #2563EB;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--metallic-gold);
+  transform: translateY(-4px);
 }
 
 .mcq-card.active {
-  background: #2563EB;
-  border-color: #2563EB;
-  box-shadow: 0 15px 30px rgba(37, 99, 235, 0.25);
+  background: var(--metallic-gold);
+  border-color: var(--metallic-gold);
+  box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
 }
 
-.mcq-icon { font-size: 40px; margin-bottom: 4px; }
-.mcq-label { font-size: 15px; font-weight: 800; color: var(--text-primary); text-align: center; }
-.mcq-card.active .mcq-label { color: white; }
+.mcq-icon { font-size: 32px; }
+.mcq-label { font-size: 13px; font-weight: 800; color: var(--text-primary); text-align: center; }
+.mcq-card.active .mcq-label { color: var(--ink-black); }
 
 .iform-footer {
-  padding: 60px 100px;
-  background: rgba(255, 255, 255, 0.5);
-  border-top: 1px solid var(--glass-border);
+  padding: 40px 80px;
   display: flex;
   justify-content: flex-end;
+  border-top: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.01);
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
 }
 
 .next-btn {
-  padding: 22px 56px;
-  border-radius: 100px;
+  padding: 18px 48px;
+  border-radius: var(--radius-full);
   font-weight: 900;
-  font-size: 18px;
-  background: #2563EB;
-  color: white;
-  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
-  transition: all 0.3s ease;
+  font-size: 16px;
+  background: var(--metallic-gold);
+  color: var(--ink-black);
+  transition: var(--transition-smooth);
+  cursor: pointer;
+  border: none;
 }
 
 .next-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 15px 35px rgba(37, 99, 235, 0.3);
+  transform: scale(1.02);
+  filter: brightness(1.1);
+  box-shadow: 0 10px 40px rgba(212, 175, 55, 0.3);
+}
+
+/* IMAGE UPLOAD FIX */
+.upload-zone {
+  border: 2px dashed var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  text-align: center;
+  transition: var(--transition-smooth);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-zone.drag { border-color: var(--metallic-gold); background: rgba(212, 175, 55, 0.05); }
+
+.upload-preview {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.upload-preview img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  display: block;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.remove-btn:hover { background: #EF4444; }
+
+@media (max-width: 1024px) {
+  .step-content { padding: 48px 40px; }
+  .iform-footer { padding: 32px 40px; }
 }
 
 @media (max-width: 768px) {
-  .step-content { padding: 48px 24px; }
-  .iform-footer { padding: 40px 24px; }
-  .step-title { font-size: 36px; }
+  .step-content { padding: 32px 24px; }
+  .iform-footer { padding: 24px 24px; }
+  .step-title { font-size: 32px; }
   .mcq-grid { grid-template-columns: repeat(2, 1fr); }
-  .iform-header { margin-bottom: 40px; }
+  .upload-preview img { height: 200px; }
 }

@@ -94,7 +94,7 @@ export default function InputForm({ onSubmit, onBack }) {
 
   const handleNext = () => {
     if (validateStep(step)) {
-      if (step < 11) setStep(step + 1)
+      if (step < 10) setStep(step + 1)
       else handleSubmit()
     }
   }

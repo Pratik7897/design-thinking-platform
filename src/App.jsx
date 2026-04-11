@@ -6,6 +6,8 @@ import Dashboard from './pages/Dashboard'
 import { generateAnalysis } from './utils/analysisEngine'
 import './App.css'
 
+import InteractiveBackground from './components/InteractiveBackground'
+
 const PAGES = {
   LANDING: 'landing',
   FORM: 'form',
@@ -43,6 +45,7 @@ function App() {
 
   return (
     <div className="app">
+      <InteractiveBackground />
       {page === PAGES.LANDING && (
         <LandingPage onStart={handleStartAnalysis} />
       )}
