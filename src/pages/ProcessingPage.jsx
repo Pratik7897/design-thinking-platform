@@ -25,136 +25,99 @@ export default function ProcessingPage({ productName }) {
         clearInterval(interval)
         return prev
       })
-    }, 900)
+    }, 1200)
     return () => clearInterval(interval)
   }, [])
 
   const progress = ((completedPhases.length) / PHASES.length) * 100
 
   return (
-    <div className="proc-page">
-      <div className="proc-bg">
+    <div className="proc-page nm-bg">
+      <div className="proc-bg-3d">
         {PHASES.map((p, i) => (
           <motion.div
             key={p.name}
-            className="proc-orb"
+            className="proc-orb-3d"
             style={{ '--orb-color': p.color }}
             animate={{
-              scale: currentPhase === i ? [1, 1.3, 1] : 1,
-              opacity: currentPhase === i ? [0.4, 0.7, 0.4] : 0.15,
+              scale: currentPhase === i ? [1, 1.4, 1] : 0.8,
+              opacity: currentPhase === i ? 0.6 : 0.1,
+              z: currentPhase === i ? 50 : 0
             }}
-            transition={{ duration: 0.9, ease: 'easeInOut' }}
+            transition={{ duration: 1.2, repeat: currentPhase === i ? Infinity : 0 }}
           />
         ))}
       </div>
 
-      <div className="proc-container">
+      <div className="proc-container-immersive">
         {/* Logo */}
-        <div className="proc-logo">
+        <div className="proc-logo glass">
           <span className="logo-icon">◎</span>
-          <span className="logo-text">ThinkLens</span>
+          <span className="logo-text">ThinkLens 3D</span>
         </div>
 
-        {/* Central Animation */}
-        <div className="proc-visual">
-          {/* Outer rotating ring */}
-          <div className="proc-ring proc-ring-outer">
-            {PHASES.map((phase, i) => {
-              const angle = (i * 360) / PHASES.length
-              const rad = (angle * Math.PI) / 180
-              const r = 47
-              const x = 50 + r * Math.cos(rad - Math.PI / 2)
-              const y = 50 + r * Math.sin(rad - Math.PI / 2)
-              const isCompleted = completedPhases.includes(i)
-              const isActive = currentPhase === i
-              return (
-                <motion.div
-                  key={phase.name}
-                  className={`proc-phase-dot ${isCompleted ? 'proc-dot-done' : ''} ${isActive ? 'proc-dot-active' : ''}`}
-                  style={{
-                    left: `${x}%`,
-                    top: `${y}%`,
-                    '--dot-color': phase.color,
-                  }}
-                  animate={isActive ? { scale: [1, 1.4, 1] } : {}}
-                  transition={{ duration: 0.8, repeat: isActive ? Infinity : 0 }}
-                >
-                  {isCompleted ? '✓' : phase.emoji}
-                </motion.div>
-              )
-            })}
-          </div>
-
-          {/* Center */}
-          <div className="proc-center">
+        {/* Central Visualization */}
+        <div className="proc-visual-3d depth-3d">
+          <div className="proc-center-glass glass">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentPhase}
-                className="proc-phase-display"
-                initial={{ scale: 0.6, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.6, opacity: 0 }}
-                transition={{ duration: 0.35 }}
+                className="proc-phase-status"
+                initial={{ rotateY: 90, opacity: 0 }}
+                animate={{ rotateY: 0, opacity: 1 }}
+                exit={{ rotateY: -90, opacity: 0 }}
+                transition={{ duration: 0.5 }}
               >
-                <div className="proc-phase-emoji" style={{ background: PHASES[currentPhase].color }}>
+                <div className="status-emoji nm-inset" style={{ color: PHASES[currentPhase].color }}>
                   {PHASES[currentPhase].emoji}
                 </div>
-                <div className="proc-phase-name">{PHASES[currentPhase].name}</div>
+                <div className="status-info">
+                  <div className="status-label">CURRENT PHASE</div>
+                  <div className="status-name">{PHASES[currentPhase].name}</div>
+                </div>
               </motion.div>
             </AnimatePresence>
           </div>
+
+          <div className="proc-orbit-rings">
+             <div className="orbit-ring ring-1"></div>
+             <div className="orbit-ring ring-2"></div>
+          </div>
         </div>
 
-        {/* Product Name */}
-        <div className="proc-product-name">
-          Analyzing <strong>{productName || 'your product'}</strong>
+        {/* Context Info */}
+        <div className="proc-info-card glass">
+          <div className="proc-product-badge nm-inset">
+            ANALYZING: {productName || 'UNNAMED PRODUCT'}
+          </div>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={currentPhase}
+              className="proc-message-text"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              {PHASES[currentPhase].message}
+            </motion.p>
+          </AnimatePresence>
         </div>
 
-        {/* Current message */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentPhase}
-            className="proc-message"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            {PHASES[currentPhase].message}
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Progress Bar */}
-        <div className="proc-progress-wrap">
-          <div className="proc-progress-bar">
+        {/* Immersive Progress */}
+        <div className="proc-progress-immersive">
+          <div className="progress-stats">
+            <span>{PHASES[currentPhase].name}</span>
+            <span>{Math.round(progress)}%</span>
+          </div>
+          <div className="progress-track-3d nm-inset">
             <motion.div
-              className="proc-progress-fill"
+              className="progress-fill-3d"
+              style={{ background: PHASES[currentPhase].color }}
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
+              transition={{ duration: 0.8 }}
             />
           </div>
-          <span className="proc-progress-text">{Math.round(progress)}% complete</span>
-        </div>
-
-        {/* Phase Pills */}
-        <div className="proc-phases-list">
-          {PHASES.map((phase, i) => {
-            const isCompleted = completedPhases.includes(i)
-            const isActive = currentPhase === i
-            return (
-              <motion.div
-                key={phase.name}
-                className={`proc-phase-pill ${isCompleted ? 'pill-done' : ''} ${isActive ? 'pill-active' : ''}`}
-                style={{ '--pill-color': phase.color }}
-                animate={isActive ? { scale: [1, 1.05, 1] } : {}}
-                transition={{ duration: 1, repeat: isActive ? Infinity : 0 }}
-              >
-                <span className="pill-emoji">{isCompleted ? '✓' : phase.emoji}</span>
-                <span className="pill-name">{phase.name}</span>
-              </motion.div>
-            )
-          })}
         </div>
       </div>
     </div>
