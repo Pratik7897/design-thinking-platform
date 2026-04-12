@@ -1,4 +1,5 @@
 import { generateFromOpenRouter } from './openrouter';
+import { generateFromGemini } from './gemini';
 
 const PHASE_KEYS = [
   'problem_definition',
@@ -129,10 +130,22 @@ const runPhase = async (phaseKey, masterData, previousContext = "") => {
 
   console.log("PROMPT:", prompt);
   
-  const responseData = await generateFromOpenRouter(prompt);
-  console.log(`RESPONSE FOR ${phaseKey}:`, responseData);
-  
-  return responseData;
+  try {
+    const responseData = await generateFromOpenRouter(prompt);
+    console.log(`[PRIMARY SUCCESS] ${phaseKey} (OpenRouter)`);
+    return responseData;
+  } catch (orErr) {
+    console.warn(`[AI FALLBACK] OpenRouter failed for ${phaseKey}. Triggering Gemini...`, orErr);
+    
+    try {
+      const geminiData = await generateFromGemini(prompt);
+      console.log(`[SECONDARY SUCCESS] ${phaseKey} (Gemini)`);
+      return geminiData;
+    } catch (gemErr) {
+      console.error(`[AI CRITICAL FAILURE] Both providers failed for ${phaseKey}`);
+      throw gemErr;
+    }
+  }
 };
 
 function getStrategicAnchor(key, masterData) {
