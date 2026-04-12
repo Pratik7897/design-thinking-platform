@@ -97,32 +97,42 @@ const runPhase = async (phaseKey, masterData, previousContext = "") => {
   const directive = getStrategicAnchor(phaseKey, masterData);
   const schema = getSchemaForPhase(phaseKey);
   
+  // MANDATORY: Log Phase and Prompt for user verification
+  console.log("PHASE:", phaseKey);
+  
   const prompt = `
-  PHASE NAME: "${phaseKey.toUpperCase()}"
-  OBJECTIVE: ${directive}
+  PHASE_ID = ${phaseKey}
+  ROLE: You are working ONLY on ${phaseKey.toUpperCase()}.
+  MISSION: Each phase must produce completely different output. Do NOT repeat yourself.
 
   PRODUCT CONTEXT:
   Name: ${masterData.productName}
   Industry: ${masterData.category}
-  Primary Goal: ${masterData.goal}
-  Target Market: ${masterData.targetMarket?.join(', ') || 'General Market'}
+  Goal: ${masterData.goal}
+  Target Market: ${masterData.targetMarket?.join(', ') || 'General'}
 
-  PREVIOUS PHASE INSIGHTS (DO NOT REPEAT THESE):
-  ${previousContext || "Initial Phase"}
+  STRATEGIC DIRECTIVE:
+  ${directive}
 
-  STRICT GENERATION RULES:
-  1. This is the ${phaseKey.toUpperCase()} phase. Focus ONLY on this phase's unique objective.
-  2. ANTI-GENERIC: Avoid corporate jargon. Provide deep, specialized, and unique insights.
-  3. NO REPETITION: Do NOT repeat insights, sentences, or concepts from the 'PREVIOUS PHASE INSIGHTS' provided above.
-  4. FORMAT: Return JSON ONLY matching its schema.
-  5. IDENTITY: Reference "${masterData.productName}" explicitly 2-3 times to ground the output.
+  PREVIOUS PHASE CONTEXT (BUILD UPON BUT DO NOT REPEAT):
+  ${previousContext || "None"}
+
+  STRICT RULES:
+  1. This is the ${phaseKey.toUpperCase()} phase.
+  2. Include this unique marker exactly in your "tagline" field: [PID:${phaseKey}]
+  3. Ensure insights are specialized, actionable, and 100% unique to this stage.
+  4. Return JSON ONLY matching the requested structure.
 
   RETURN JSON ONLY matching this schema:
   ${JSON.stringify(schema)}
   `;
 
-  console.log(`[PROMPT EXECUTION] Phase: ${phaseKey}`);
-  return await generateFromOpenRouter(prompt);
+  console.log("PROMPT:", prompt);
+  
+  const responseData = await generateFromOpenRouter(prompt);
+  console.log(`RESPONSE FOR ${phaseKey}:`, responseData);
+  
+  return responseData;
 };
 
 function getStrategicAnchor(key, masterData) {
