@@ -151,6 +151,9 @@ function DynamicPhaseContent({ phase }) {
 export default function PhaseCard({ phaseKey, phase, index, isHighlighted, isImmersive }) {
   const [expanded, setExpanded] = useState(isImmersive)
 
+  // MANDATORY: Log render data for verification
+  console.log(`RENDER DATA [${phaseKey}]:`, phase);
+
   const toggleExpand = () => {
     if (isImmersive) return
     setExpanded(prev => !prev)

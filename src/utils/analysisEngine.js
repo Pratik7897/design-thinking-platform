@@ -186,34 +186,22 @@ function getErrorState(key) {
 }
 
 function generateFallbackAnalysis(data) {
-  const mockInsights = [
-    `Analyze ${data.productName} through a deep human-centric lens to identify hidden value.`,
-    "Focus on iterative refinement and rapid prototyping to validate market assumptions.",
-    "Prioritize features based on the MoSCoW framework for strategic alignment."
-  ];
-
   return {
     metadata: { 
       productName: data.productName || 'Analysis', 
       category: data.category || 'Strategy',
       generatedAt: new Date().toISOString(),
-      engine: "Strategy Fallback Engine" 
+      engine: "Fallback (No API Key)" 
     },
     phases: PHASE_KEYS.reduce((acc, key) => { 
       acc[key] = { 
         ...PHASE_COLORS[key], 
         emoji: getEmojiForKey(key),
         title: key.replace(/_/g, ' ').toUpperCase(),
-        tagline: `Strategic Framework for ${data.productName}`,
-        keyInsights: mockInsights,
-        actionItems: [
-          { action: "Review core business objectives", timeline: "Week 1" },
-          { action: "Initiate stakeholder interviews", timeline: "Week 2" }
-        ],
-        // Add some structural fields for common phases to avoid empty space
-        scope: "Comprehensive market entry and product scaling.",
-        segments: [{name: "Primary Audience", description: "Core user group seeking solutions.", value: "High"}],
-        kpis: [{metric: "User Acquisition", target: "10k Growth"}]
+        tagline: "ANALYSIS UNAVAILABLE",
+        keyInsights: ["Real AI insights require a valid OpenRouter API Key.", "Please check your environment variables."],
+        actionItems: [{ action: "Add VITE_OPENROUTER_API_KEY", timeline: "Critical" }],
+        scope: "N/A"
       }; 
       return acc; 
     }, {})
