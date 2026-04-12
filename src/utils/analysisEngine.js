@@ -41,20 +41,27 @@ export async function generateAnalysis(data) {
     }
 
     let allPhaseData = {};
+    let sessionContext = ""; // For context evolution
     
-    // Process phases sequentially to avoid rate limits and ensure maximum stability
+    // Process phases sequentially to enable context evolution
     for (const key of PHASE_KEYS) {
       try {
-        console.log("PHASE:", key); // Mandatory logging
-        const result = await runPhase(key, data);
+        console.log("PHASE:", key); 
+        const result = await runPhase(key, data, sessionContext);
         allPhaseData[key] = result;
+        
+        // Update context for next phase (Context Evolution)
+        if (result && result.keyInsights) {
+          sessionContext += `\n[${key.toUpperCase()}] Insights: ${result.keyInsights.join(". ")}`;
+        }
+        
         console.log(`[AI SUCCESS] ${key}`);
       } catch (err) {
         console.error(`[AI FAILURE] Phase: ${key}`, err);
         allPhaseData[key] = {
           ...getErrorState(key),
           tagline: "AI GENERATION FAILED",
-          keyInsights: [err.message || "Unknown API Error", "Please try again or check your OpenRouter credits."],
+          keyInsights: [err.message || "Unknown API Error", "Please retry."],
         };
       }
     }
@@ -86,46 +93,52 @@ export async function generateAnalysis(data) {
  * Individual Phase Generator
  * Enforces JSON Schema and Phase Isolation
  */
-const runPhase = async (phaseKey, masterData) => {
+const runPhase = async (phaseKey, masterData, previousContext = "") => {
   const directive = getStrategicAnchor(phaseKey, masterData);
   const schema = getSchemaForPhase(phaseKey);
   
   const prompt = `
-  PHASE: "${phaseKey.toUpperCase()}"
-  PRODUCT: ${masterData.productName} (${masterData.category})
-  GOAL: ${masterData.goal}
-  AUDIENCE: ${masterData.targetMarket?.join(', ') || 'General'}
+  PHASE NAME: "${phaseKey.toUpperCase()}"
+  OBJECTIVE: ${directive}
 
-  STRATEGIC DIRECTIVE:
-  ${directive}
+  PRODUCT CONTEXT:
+  Name: ${masterData.productName}
+  Industry: ${masterData.category}
+  Primary Goal: ${masterData.goal}
+  Target Market: ${masterData.targetMarket?.join(', ') || 'General Market'}
 
-  STRICT RULES:
-  1. Generate ONLY phase-specific output for this product.
-  2. Do NOT repeat text from other phases.
-  3. Reference "${masterData.productName}" explicitly 2-3 times.
-  4. Ensure insights are actionable, not generic.
+  PREVIOUS PHASE INSIGHTS (DO NOT REPEAT THESE):
+  ${previousContext || "Initial Phase"}
+
+  STRICT GENERATION RULES:
+  1. This is the ${phaseKey.toUpperCase()} phase. Focus ONLY on this phase's unique objective.
+  2. ANTI-GENERIC: Avoid corporate jargon. Provide deep, specialized, and unique insights.
+  3. NO REPETITION: Do NOT repeat insights, sentences, or concepts from the 'PREVIOUS PHASE INSIGHTS' provided above.
+  4. FORMAT: Return JSON ONLY matching its schema.
+  5. IDENTITY: Reference "${masterData.productName}" explicitly 2-3 times to ground the output.
 
   RETURN JSON ONLY matching this schema:
   ${JSON.stringify(schema)}
   `;
 
+  console.log(`[PROMPT EXECUTION] Phase: ${phaseKey}`);
   return await generateFromOpenRouter(prompt);
 };
 
 function getStrategicAnchor(key, masterData) {
   const anchors = {
-    problem_definition: "Define the core problem. Focus on scope, constraints, and 'How Might We' questions. Do not suggest solutions yet.",
-    user_segmentation: "Divide the market into behavioral segments and value clusters. Identify the primary hero persona.",
-    empathy_mapping: `Deep dive into the user's sensory experience (Thinks, Feels, Says, Does) specifically regarding ${masterData.productName}.`,
-    pain_point_analysis: "Quantify the friction. Separate symptoms from root causes. Focus on emotional and functional obstacles.",
-    competitive_analysis: "Map the landscape. Focus on rival vulnerabilities and your sustainable competitive advantage (Moat).",
-    ideation: "Synthesize high-impact concept groups and a 5-year 'Blue Sky' vision for the product.",
-    feature_prioritization: "Draft a MoSCoW matrix. Balance technical complexity against user value.",
-    user_journey_mapping: "Detail the step-by-step chronology of use. Pinpoint the 'Magic Moment' where value clicks.",
-    prototyping_strategy: "Design a validation pathway. Define the technical stack (High-fi) and core user flow to test.",
-    validation_feedback: "Architect the growth engine. Define 2-3 specific KPIs with numeric targets and a strategic pivot/fallback plan."
+    problem_definition: "Frame the problem space. Use 'How Might We' format. Do NOT suggest features yet. Focus on pain discovery and scope constraints.",
+    user_segmentation: "Identify 3 distinct behavioral personas. Map their unique drivers and barriers. Focus on human psychology, not just demographics.",
+    empathy_mapping: `Deep dive into the 4 quadrants (Says, Does, Thinks, Feels). Focus on the emotional tension points users face with ${masterData.productName}.`,
+    pain_point_analysis: "Quantify friction. Identify the 'High-Stakes' pain points where users currently lose time or money. Differentiate symptoms from root causes.",
+    competitive_analysis: "Analyze the competitive vacuum. Where do giants fail? Focus on your 'Unfair Advantage' and unique strategic positioning.",
+    ideation: "Generate 3 disruptive concepts. Focus on the 'Big Idea'. Go beyond incremental features into transformative solutions.",
+    feature_prioritization: "Draft a technical roadmap. Rank by Impact vs. Feasibility. Define the 'Must-Have' core for an MVP.",
+    user_journey_mapping: "Detail the chronological journey from discovery to 'Aha! Moment'. Focus on the transition between stages.",
+    prototyping_strategy: "Design a verification mechanism. What is the smallest thing we can build to prove the value? Define low-fi and high-fi targets.",
+    validation_feedback: "Architect the feedback loops. Define numeric success KPIs and a fallback 'Pivot' strategy if initial assumptions fail."
   };
-  return anchors[key] || "Analyze this phase with high strategic depth.";
+  return anchors[key] || "Analyze this phase with specialized strategic depth.";
 }
 
 function getSchemaForPhase(key) {
