@@ -33,25 +33,29 @@ const PHASE_COLORS = {
 export async function generateAnalysis(data) {
   try {
     const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+    console.log("API KEY:", apiKey); // Mandatory debug log
+
     if (!apiKey || apiKey === 'undefined') {
       console.warn("[AI ENGINE] API Key is missing. Reverting to fallback mode.");
       return generateFallbackAnalysis(data);
     }
-
-    console.log("[AI ENGINE] API Key detected. Initiating 10-Phase DeepSeek Strategy Pipeline...");
 
     let allPhaseData = {};
     
     // Process phases sequentially to avoid rate limits and ensure maximum stability
     for (const key of PHASE_KEYS) {
       try {
-        console.log(`[AI PHASE] ${key.toUpperCase()} - Initiating...`);
+        console.log("PHASE:", key); // Mandatory logging
         const result = await runPhase(key, data);
         allPhaseData[key] = result;
-        console.log(`[AI PHASE] ${key.toUpperCase()} - Success`);
+        console.log(`[AI SUCCESS] ${key}`);
       } catch (err) {
-        console.error(`[AI ERROR] Phase ${key} failed:`, err);
-        allPhaseData[key] = null;
+        console.error(`[AI FAILURE] Phase: ${key}`, err);
+        allPhaseData[key] = {
+          ...getErrorState(key),
+          tagline: "AI GENERATION FAILED",
+          keyInsights: [err.message || "Unknown API Error", "Please try again or check your OpenRouter credits."],
+        };
       }
     }
 
