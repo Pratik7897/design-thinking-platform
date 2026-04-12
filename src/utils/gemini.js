@@ -9,8 +9,8 @@ export const generateFromGemini = async (prompt) => {
     throw new Error("Gemini API Key is missing");
   }
 
-  // Using v1beta endpoint as requested
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  // Using v1beta endpoint with Gemini 2.0 Flash (as 1.5-flash is deprecated on v1beta for this key)
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
   console.log("[GEMINI] Initiating fallback request...");
 
