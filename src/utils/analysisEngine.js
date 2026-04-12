@@ -33,11 +33,16 @@ const PHASE_COLORS = {
  */
 export async function generateAnalysis(data) {
   try {
-    const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
-    console.log("API KEY:", apiKey); // Mandatory debug log
+    const orKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+    const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    
+    console.log("OPENROUTER KEY:", orKey ? "Present" : "Missing");
+    console.log("GEMINI KEY:", geminiKey ? "Present" : "Missing");
 
-    if (!apiKey || apiKey === 'undefined' || apiKey === '') {
-      console.warn("[AI ENGINE] CRITICAL: VITE_OPENROUTER_API_KEY is missing or undefined. The system is now running in 'Safe Fallback Mode' with generic strategic data. To enable real AI insights, please add your API key to your environment variables (Local .env or Vercel Dashboard).");
+    const hasKeys = (orKey && orKey !== 'undefined') || (geminiKey && geminiKey !== 'undefined');
+
+    if (!hasKeys) {
+      console.warn("[AI ENGINE] CRITICAL: Both VITE_OPENROUTER_API_KEY and VITE_GEMINI_API_KEY are missing. The system is now running in 'Safe Fallback Mode'. Please add at least one API key to your environment variables.");
       return generateFallbackAnalysis(data);
     }
 
