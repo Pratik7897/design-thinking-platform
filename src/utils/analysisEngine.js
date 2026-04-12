@@ -35,8 +35,8 @@ export async function generateAnalysis(data) {
     const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
     console.log("API KEY:", apiKey); // Mandatory debug log
 
-    if (!apiKey || apiKey === 'undefined') {
-      console.warn("[AI ENGINE] API Key is missing. Reverting to fallback mode.");
+    if (!apiKey || apiKey === 'undefined' || apiKey === '') {
+      console.warn("[AI ENGINE] CRITICAL: VITE_OPENROUTER_API_KEY is missing or undefined. The system is now running in 'Safe Fallback Mode' with generic strategic data. To enable real AI insights, please add your API key to your environment variables (Local .env or Vercel Dashboard).");
       return generateFallbackAnalysis(data);
     }
 
