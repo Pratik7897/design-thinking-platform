@@ -1,74 +1,67 @@
 /**
- * OpenRouter Client for DeepSeek-V3
- * Managed multi-provider architecture for ThinkLens Pro
+ * OpenRouter Client - Production Ready
+ * ThinkLens Pro - Optimized for stability and variation
  */
 export const generateFromOpenRouter = async (prompt, isJson = true) => {
   const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
   
-  // Mandatory debug log as requested
-  console.log("API KEY:", apiKey ? (apiKey.substring(0, 10) + "...") : "UNDEFINED");
-
-  if (!apiKey || apiKey === "undefined") {
-    console.error("[AI CLIENT ERROR] OpenRouter API Key is MISSING in .env file!");
-    throw new Error("API Key Missing");
+  if (!apiKey || apiKey === "undefined" || apiKey === "") {
+    console.error("[CRITICAL] OpenRouter API Key is missing!");
+    throw new Error("MISSING_API_KEY");
   }
 
-  try {
+  // Timeout logic (15 seconds as requested)
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error("TIMEOUT")), 15000)
+  );
+
+  const fetchPromise = (async () => {
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         "HTTP-Referer": window.location.origin,
-        "X-Title": "ThinkLens"
+        "X-Title": "ThinkLens Pro"
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-chat",
+        model: "deepseek/deepseek-chat", // Primary model
         messages: [
           {
             role: "system",
-            content: "You are a senior product strategist. Provide specific, deep insights. Always return strictly valid JSON."
+            content: "You are a senior product strategist and design thinker. Provide deep, mutually exclusive strategic insights. Always return strictly valid JSON."
           },
           {
             role: "user",
             content: prompt
           }
         ],
-        temperature: 0.7,
+        temperature: 0.8, // Increased for variation
         response_format: isJson ? { type: "json_object" } : undefined
       }),
     });
 
     const data = await res.json();
-    console.log("OPENROUTER RESPONSE:", data);
-
-    if (!res.ok) {
-      console.error("OpenRouter error:", data);
-      throw new Error(data.error?.message || `OpenRouter API error: ${res.status}`);
-    }
-
-    const content = data.choices[0].message.content;
-
-    if (!content) {
-      throw new Error("AI returned an empty response.");
-    }
     
+    if (!res.ok) {
+      throw new Error(data.error?.message || `API_ERROR_${res.status}`);
+    }
+
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) throw new Error("EMPTY_RESPONSE");
+
     if (isJson) {
       try {
         const jsonStart = content.indexOf('{');
         const jsonEnd = content.lastIndexOf('}');
-        if (jsonStart === -1 || jsonEnd === -1) throw new Error("No JSON found");
+        if (jsonStart === -1 || jsonEnd === -1) throw new Error("INVALID_JSON_STRUCTURE");
         return JSON.parse(content.substring(jsonStart, jsonEnd + 1));
       } catch (err) {
-        console.error("JSON Parse Error. Content:", content);
-        throw new Error("AI returned invalid JSON structure");
+        throw new Error("JSON_PARSE_ERROR");
       }
     }
-
     return content;
+  })();
 
-  } catch (error) {
-    console.error("[AI CLIENT ERROR] OpenRouter:", error);
-    throw error;
-  }
+  return await Promise.race([fetchPromise, timeoutPromise]);
 };
