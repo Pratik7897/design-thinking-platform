@@ -27,10 +27,6 @@ const PHASE_COLORS = {
   validation_feedback: { primary: '#18181B', dark: '#09090B', light: '#27272A', text: '#FFFFFF' },
 };
 
-/**
- * Main Analysis Orchestrator
- * Fully migrated to OpenRouter (DeepSeek-V3) for production stability
- */
 export async function generateAnalysis(data) {
   try {
     const orKey = import.meta.env.VITE_OPENROUTER_API_KEY;
@@ -42,153 +38,107 @@ export async function generateAnalysis(data) {
     const hasKeys = (orKey && orKey !== 'undefined') || (geminiKey && geminiKey !== 'undefined');
 
     if (!hasKeys) {
-      console.warn("[AI ENGINE] CRITICAL: Both VITE_OPENROUTER_API_KEY and VITE_GEMINI_API_KEY are missing. The system is now running in 'Safe Fallback Mode'. Please add at least one API key to your environment variables.");
+      console.warn("[AI ENGINE] Fallback mode active.");
       return generateFallbackAnalysis(data);
     }
 
     let allPhaseData = {};
-    let sessionContext = ""; // For context evolution
+    let sessionContext = ""; 
     
-    // Process phases sequentially to enable context evolution and stay within rate limits
     for (const key of PHASE_KEYS) {
       try {
         console.log("PHASE:", key); 
         
-        // Add a small delay between phases to avoid 429 errors on free tier providers
         if (key !== PHASE_KEYS[0]) {
-          console.log("[STABILITY] Throttling request for 3s...");
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          console.log("[STABILITY] Throttling 5s...");
+          await new Promise(resolve => setTimeout(resolve, 5000));
         }
 
-        const result = await runPhase(key, data, sessionContext);
+        const result = await runPhaseWithRetry(key, data, sessionContext);
         allPhaseData[key] = result;
         
-        // Update context for next phase (Context Evolution)
         if (result && result.keyInsights) {
           sessionContext += `\n[${key.toUpperCase()}] Insights: ${result.keyInsights.join(". ")}`;
         }
-        
-        console.log(`[AI SUCCESS] ${key}`);
       } catch (err) {
-        console.error(`[AI FAILURE] Phase: ${key}`, err);
+        console.error(`[AI FAILURE] ${key}:`, err);
         allPhaseData[key] = {
           ...getErrorState(key),
           tagline: "AI GENERATION FAILED",
-          keyInsights: [err.message || "Unknown API Error", "Please retry."],
+          keyInsights: [err.message || "API Error", "Please retry."],
         };
       }
     }
 
     return {
-      metadata: {
-        productName: data.productName,
-        category: data.category,
-        generatedAt: new Date().toISOString(),
-        engine: "DeepSeek-V3 (via OpenRouter)"
-      },
+      metadata: { productName: data.productName, generatedAt: new Date().toISOString() },
       phases: PHASE_KEYS.reduce((acc, key) => {
-        const aiResult = allPhaseData[key];
-        acc[key] = {
-          ...PHASE_COLORS[key],
-          emoji: getEmojiForKey(key),
-          ...(aiResult || getErrorState(key))
-        };
+        acc[key] = { ...PHASE_COLORS[key], emoji: getEmojiForKey(key), ...allPhaseData[key] };
         return acc;
       }, {})
     };
   } catch (err) {
-    console.error("[AI FATAL] Pipeline Collapse:", err);
     return generateFallbackAnalysis(data);
   }
 }
 
-/**
- * Individual Phase Generator
- * Enforces JSON Schema and Phase Isolation
- */
+const runPhaseWithRetry = async (phaseKey, masterData, previousContext, attempt = 1) => {
+  const MAX_ATTEMPTS = 3;
+  try {
+    return await runPhase(phaseKey, masterData, previousContext);
+  } catch (err) {
+    const isRateLimit = err.message?.includes("429") || err.message?.includes("quota") || err.message?.includes("limit");
+    if (isRateLimit && attempt < MAX_ATTEMPTS) {
+      const waitTime = (attempt === 1 ? 15000 : 30000); // Wait 15s then 30s
+      console.warn(`[RETRY] Rate limit for ${phaseKey}. Waiting ${waitTime/1000}s...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      return runPhaseWithRetry(phaseKey, masterData, previousContext, attempt + 1);
+    }
+    throw err;
+  }
+};
+
 const runPhase = async (phaseKey, masterData, previousContext = "") => {
   const directive = getStrategicAnchor(phaseKey, masterData);
   const schema = getSchemaForPhase(phaseKey);
-  
-  // MANDATORY: Log Phase and Prompt for user verification
-  console.log("PHASE:", phaseKey);
-  
-  const prompt = `
-  PHASE_ID = ${phaseKey}
-  ROLE: You are working ONLY on ${phaseKey.toUpperCase()}.
-  MISSION: Each phase must produce completely different output. Do NOT repeat yourself.
+  const prompt = `PHASE: ${phaseKey}\nCONTEXT: ${JSON.stringify(masterData)}\nPREVIOUS: ${previousContext}\nDIRECTIVE: ${directive}\nSCHEMA: ${JSON.stringify(schema)}`;
 
-  PRODUCT CONTEXT:
-  Name: ${masterData.productName}
-  Industry: ${masterData.category}
-  Goal: ${masterData.goal}
-  Target Market: ${masterData.targetMarket?.join(', ') || 'General'}
-
-  STRATEGIC DIRECTIVE:
-  ${directive}
-
-  PREVIOUS PHASE CONTEXT (BUILD UPON BUT DO NOT REPEAT):
-  ${previousContext || "None"}
-
-  STRICT RULES:
-  1. This is the ${phaseKey.toUpperCase()} phase.
-  2. Include this unique marker exactly in your "tagline" field: [PID:${phaseKey}]
-  3. Ensure insights are specialized, actionable, and 100% unique to this stage.
-  4. Return JSON ONLY matching the requested structure.
-
-  RETURN JSON ONLY matching this schema:
-  ${JSON.stringify(schema)}
-  `;
-
-  console.log("PROMPT:", prompt);
-  
   try {
-    const responseData = await generateFromOpenRouter(prompt);
-    console.log(`[PRIMARY SUCCESS] ${phaseKey} (OpenRouter)`);
-    return responseData;
-  } catch (orErr) {
-    console.warn(`[AI FALLBACK] OpenRouter failed for ${phaseKey}. Triggering Gemini...`, orErr);
-    
-    try {
-      const geminiData = await generateFromGemini(prompt);
-      console.log(`[SECONDARY SUCCESS] ${phaseKey} (Gemini)`);
-      return geminiData;
-    } catch (gemErr) {
-      console.error(`[AI CRITICAL FAILURE] Both providers failed for ${phaseKey}`);
-      throw gemErr;
-    }
+    return await generateFromOpenRouter(prompt);
+  } catch (err) {
+    return await generateFromGemini(prompt);
   }
 };
 
 function getStrategicAnchor(key, masterData) {
   const anchors = {
-    problem_definition: "Frame the problem space. Use 'How Might We' format. Do NOT suggest features yet. Focus on pain discovery and scope constraints.",
-    user_segmentation: "Identify 3 distinct behavioral personas. Map their unique drivers and barriers. Focus on human psychology, not just demographics.",
-    empathy_mapping: `Deep dive into the 4 quadrants (Says, Does, Thinks, Feels). Focus on the emotional tension points users face with ${masterData.productName}.`,
-    pain_point_analysis: "Quantify friction. Identify the 'High-Stakes' pain points where users currently lose time or money. Differentiate symptoms from root causes.",
-    competitive_analysis: "Analyze the competitive vacuum. Where do giants fail? Focus on your 'Unfair Advantage' and unique strategic positioning.",
-    ideation: "Generate 3 disruptive concepts. Focus on the 'Big Idea'. Go beyond incremental features into transformative solutions.",
-    feature_prioritization: "Draft a technical roadmap. Rank by Impact vs. Feasibility. Define the 'Must-Have' core for an MVP.",
-    user_journey_mapping: "Detail the chronological journey from discovery to 'Aha! Moment'. Focus on the transition between stages.",
-    prototyping_strategy: "Design a verification mechanism. What is the smallest thing we can build to prove the value? Define low-fi and high-fi targets.",
-    validation_feedback: "Architect the feedback loops. Define numeric success KPIs and a fallback 'Pivot' strategy if initial assumptions fail."
+    problem_definition: "Frame the problem space. Use 'How Might We' format.",
+    user_segmentation: "Identify 3 distinct behavioral personas.",
+    empathy_mapping: "Deep dive into the 4 quadrants (Says, Does, Thinks, Feels).",
+    pain_point_analysis: "Quantify friction. Identify root causes.",
+    competitive_analysis: "Analyze the competitive vacuum and unique moat.",
+    ideation: "Generate 3 disruptive concepts.",
+    feature_prioritization: "Draft a technical roadmap. Rank by Impact vs. Feasibility.",
+    user_journey_mapping: "Detail the chronological journey.",
+    prototyping_strategy: "Design a verification mechanism.",
+    validation_feedback: "Architect the feedback loops and KPIs."
   };
-  return anchors[key] || "Analyze this phase with specialized strategic depth.";
+  return anchors[key] || "Strategic analysis.";
 }
 
 function getSchemaForPhase(key) {
   const base = { title: "String", tagline: "String", keyInsights: ["String"], actionItems: [{action: "String", timeline: "String"}] };
   const schemas = {
-    problem_definition: { ...base, scope: "String", coreProblem: "String", hmw: ["String"] },
-    user_segmentation: { ...base, segments: [{name: "String", description: "String", value: "String"}], targetArchetype: "String" },
-    empathy_mapping: { ...base, thinks: ["String"], feels: ["String"], says: ["String"], does: ["String"] },
-    pain_point_analysis: { ...base, pains: [{issue: "String", impact: "String", frequency: "String"}], rootCauses: ["String"] },
-    competitive_analysis: { ...base, competitors: [{name: "String", advantage: "String", vulnerability: "String"}], uniqueMoat: "String" },
-    ideation: { ...base, concepts: [{name: "String", description: "String", impact: "String"}], blueSkyIdea: "String" },
-    feature_prioritization: { ...base, matrix: {must: ["String"], should: ["String"], could: ["String"], wont: ["String"]}, complexityVsValue: "String" },
-    user_journey_mapping: { ...base, steps: [{step: "String", action: "String", emotion: "Pos/Neg/Neu", insight: "String"}], magicMoment: "String" },
-    prototyping_strategy: { ...base, focus: "String", lowFi: ["String"], highFi: ["String"], keyFlow: "String" },
-    validation_feedback: { ...base, kpis: [{metric: "String", target: "String"}], testPlan: "String", fallbackPlan: "String" }
+    problem_definition: { ...base, scope: "String", hmw: ["String"] },
+    user_segmentation: { ...base, segments: [{name: "String", value: "String"}] },
+    empathy_mapping: { ...base, thinks: ["String"], feels: ["String"] },
+    pain_point_analysis: { ...base, pains: [{issue: "String", impact: "String"}], rootCauses: ["String"] },
+    competitive_analysis: { ...base, competitors: [{name: "String", advantage: "String"}], uniqueMoat: "String" },
+    ideation: { ...base, concepts: [{name: "String", impact: "String"}], blueSkyIdea: "String" },
+    feature_prioritization: { ...base, matrix: {must: ["String"], should: ["String"]}, complexityVsValue: "String" },
+    user_journey_mapping: { ...base, steps: [{step: "String", action: "String"}], magicMoment: "String" },
+    prototyping_strategy: { ...base, focus: "String", lowFi: ["String"], keyFlow: "String" },
+    validation_feedback: { ...base, kpis: [{metric: "String", target: "String"}], testPlan: "String" }
   };
   return schemas[key] || base;
 }
@@ -199,36 +149,15 @@ function getEmojiForKey(key) {
 }
 
 function getErrorState(key) {
-  return { 
-    title: key.replace(/_/g, ' ').toUpperCase(), 
-    tagline: "PHASE GENERATION UNAVAILABLE", 
-    keyInsights: [
-      "The strategy engine was unable to process this specific phase.",
-      "Consider re-running the analysis or checking your network status."
-    ], 
-    actionItems: [{action: "Restart Analysis Pipeline", timeline: "TBD"}] 
-  };
+  return { title: key.toUpperCase(), tagline: "ERROR", keyInsights: ["API Error"], actionItems: [] };
 }
 
 function generateFallbackAnalysis(data) {
   return {
-    metadata: { 
-      productName: data.productName || 'Analysis', 
-      category: data.category || 'Strategy',
-      generatedAt: new Date().toISOString(),
-      engine: "Fallback (No API Key)" 
-    },
-    phases: PHASE_KEYS.reduce((acc, key) => { 
-      acc[key] = { 
-        ...PHASE_COLORS[key], 
-        emoji: getEmojiForKey(key),
-        title: key.replace(/_/g, ' ').toUpperCase(),
-        tagline: "ANALYSIS UNAVAILABLE",
-        keyInsights: ["Real AI insights require a valid OpenRouter API Key.", "Please check your environment variables."],
-        actionItems: [{ action: "Add VITE_OPENROUTER_API_KEY", timeline: "Critical" }],
-        scope: "N/A"
-      }; 
-      return acc; 
+    metadata: { productName: data.productName || 'Analysis', generatedAt: new Date().toISOString() },
+    phases: PHASE_KEYS.reduce((acc, key) => {
+      acc[key] = { ...PHASE_COLORS[key], emoji: getEmojiForKey(key), title: key.toUpperCase(), tagline: "UNAVAILABLE", keyInsights: ["API Key missing or quota exceeded."], actionItems: [] };
+      return acc;
     }, {})
   };
 }
