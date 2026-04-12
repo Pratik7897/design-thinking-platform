@@ -50,14 +50,14 @@ function DynamicPhaseContent({ phase }) {
     const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
     
     // Custom renderers based on key name or value structure
-    if (key === 'kpis' || (key === 'metrics' && Array.isArray(value))) {
+    if ((key === 'kpis' || key === 'metrics') && Array.isArray(value)) {
       return (
         <UIBlock title={label} icon="📈" key={key}>
           <div className="metrics-grid">
             {value.map((kpi, i) => (
               <div key={i} className="metric-card nm-inset">
-                <div className="metric-name">{kpi.metric || kpi.name || 'Performance Metric'}</div>
-                <div className="metric-target gold-text">{kpi.target || kpi.value || 'N/A'}</div>
+                <div className="metric-name">{kpi?.metric || kpi?.name || 'Item'}</div>
+                <div className="metric-target gold-text">{kpi?.target || kpi?.value || 'N/A'}</div>
               </div>
             ))}
           </div>
@@ -65,15 +65,15 @@ function DynamicPhaseContent({ phase }) {
       )
     }
 
-    if (key === 'segments' || key === 'competitors' || key === 'concepts' || key === 'pains') {
+    if ((key === 'segments' || key === 'competitors' || key === 'concepts' || key === 'pains' || key === 'kpis') && Array.isArray(value)) {
       return (
         <UIBlock title={label} icon="🎯" key={key}>
           <div className="blocks-grid">
             {value.map((item, i) => (
               <div key={i} className="insight-mini-card nm-flat">
-                <div className="mini-card-title">{item.name || item.issue || item.step || 'Details'}</div>
-                <div className="mini-card-body">{item.description || item.advantage || item.impact || item.insight}</div>
-                {item.value && <span className="mini-card-badge">{item.value}</span>}
+                <div className="mini-card-title">{item?.name || item?.issue || item?.step || item?.metric || 'Details'}</div>
+                <div className="mini-card-body">{item?.description || item?.advantage || item?.impact || item?.insight || item?.target}</div>
+                {item?.value && <span className="mini-card-badge">{item.value}</span>}
               </div>
             ))}
           </div>
@@ -81,14 +81,14 @@ function DynamicPhaseContent({ phase }) {
       )
     }
 
-    if (key === 'matrix') {
+    if (key === 'matrix' && value && typeof value === 'object') {
       return (
-        <UIBlock title="MoSCoW Matrix" icon="⚖️" key={key}>
+        <UIBlock title="Strategic Matrix" icon="⚖️" key={key}>
           <div className="moscow-grid">
             {Object.entries(value).map(([mKey, mVal]) => (
               <div key={mKey} className={`moscow-sector sector-${mKey} nm-inset`}>
                 <div className="sector-label">{mKey.toUpperCase()}</div>
-                <div className="sector-items">{mVal.join(', ')}</div>
+                <div className="sector-items">{Array.isArray(mVal) ? mVal.join(', ') : String(mVal || 'N/A')}</div>
               </div>
             ))}
           </div>
@@ -96,7 +96,7 @@ function DynamicPhaseContent({ phase }) {
       )
     }
 
-    if (key === 'steps') {
+    if (key === 'steps' && Array.isArray(value)) {
       return (
         <UIBlock title="User Journey Flow" icon="🗺️" key={key}>
           <div className="journey-flow">
@@ -104,8 +104,8 @@ function DynamicPhaseContent({ phase }) {
               <div key={i} className="journey-step">
                 <div className="step-point nm-flat">{i + 1}</div>
                 <div className="step-info">
-                  <div className="step-name">{step.step}</div>
-                  <div className="step-emotion">{step.emotion === 'Pos' ? '😊' : step.emotion === 'Neg' ? '😫' : '😐'}</div>
+                  <div className="step-name">{step?.step || step?.action || 'Step'}</div>
+                  <div className="step-emotion">{step?.emotion === 'Pos' ? '😊' : step?.emotion === 'Neg' ? '😫' : '😐'}</div>
                 </div>
               </div>
             ))}

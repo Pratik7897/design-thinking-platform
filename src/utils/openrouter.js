@@ -10,8 +10,6 @@ export const generateFromOpenRouter = async (prompt, isJson = true) => {
     throw new Error("API Key Missing");
   }
 
-  console.log(`[AI CLIENT] Headers initialized for ${apiKey.substring(0, 10)}...`);
-
   try {
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -22,11 +20,11 @@ export const generateFromOpenRouter = async (prompt, isJson = true) => {
         "X-Title": "ThinkLens Pro"
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-chat",
+        model: "deepseek/deepseek-chat", // Primary model
         messages: [
           {
             role: "system",
-            content: "You are a Senior Product Strategist at a top-tier consultancy (McKinsey/IDEO). Provide specific, deep, and non-generic insights. Always return strictly valid JSON matching the requested schema."
+            content: "You are a Senior Product Strategist at IDEO. Provide specific, deep insights. " + (isJson ? "Always return your response as a valid JSON object. Do not include any text outside the JSON structure." : "")
           },
           {
             role: "user",
@@ -38,20 +36,33 @@ export const generateFromOpenRouter = async (prompt, isJson = true) => {
       }),
     });
 
-    const data = await res.json();
-
     if (!res.ok) {
-      throw new Error(data.error?.message || `OpenRouter API error: ${res.status}`);
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.error?.message || `OpenRouter API error: ${res.status}`);
     }
 
-    const content = data.choices[0].message.content;
+    const data = await res.json();
+    const content = data.choices[0]?.message?.content;
+
+    if (!content) {
+      throw new Error("AI returned an empty response.");
+    }
     
     // Safety check for JSON blocks
     if (isJson) {
       try {
-        return JSON.parse(content.replace(/```json|```/g, '').trim());
+        // Find the first '{' and last '}' to extract JSON
+        const jsonStart = content.indexOf('{');
+        const jsonEnd = content.lastIndexOf('}');
+        
+        if (jsonStart === -1 || jsonEnd === -1) {
+          throw new Error("No JSON object found in response");
+        }
+        
+        const cleanContent = content.substring(jsonStart, jsonEnd + 1);
+        return JSON.parse(cleanContent);
       } catch (parseErr) {
-        console.error("OpenRouter JSON Parse Error:", content);
+        console.error("OpenRouter JSON Parse Error. Original content:", content);
         throw new Error("AI returned invalid JSON structure");
       }
     }

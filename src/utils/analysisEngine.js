@@ -33,29 +33,26 @@ const PHASE_COLORS = {
 export async function generateAnalysis(data) {
   try {
     const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
-    if (!apiKey) return generateFallbackAnalysis(data);
+    if (!apiKey || apiKey === 'undefined') {
+      console.warn("[AI ENGINE] API Key is missing. Reverting to fallback mode.");
+      return generateFallbackAnalysis(data);
+    }
 
-    console.log("[AI ENGINE] Initiating 10-Phase DeepSeek Strategy Pipeline...");
+    console.log("[AI ENGINE] API Key detected. Initiating 10-Phase DeepSeek Strategy Pipeline...");
 
-    // Process in batches (5+5) to manage server-side load effectively
-    const batch1 = PHASE_KEYS.slice(0, 5);
-    const batch2 = PHASE_KEYS.slice(5);
-    
     let allPhaseData = {};
-
-    for (const batch of [batch1, batch2]) {
-      const results = await Promise.all(batch.map(async (key) => {
-        try {
-          console.log(`[AI PROVIDER] OpenRouter`);
-          console.log(`[AI PHASE] ${key.toUpperCase()}`);
-          return { key, data: await runPhase(key, data) };
-        } catch (err) {
-          console.error(`[AI ERROR] Phase ${key} failed:`, err);
-          return { key, data: null };
-        }
-      }));
-      
-      results.forEach(r => { if (r.data) allPhaseData[r.key] = r.data; });
+    
+    // Process phases sequentially to avoid rate limits and ensure maximum stability
+    for (const key of PHASE_KEYS) {
+      try {
+        console.log(`[AI PHASE] ${key.toUpperCase()} - Initiating...`);
+        const result = await runPhase(key, data);
+        allPhaseData[key] = result;
+        console.log(`[AI PHASE] ${key.toUpperCase()} - Success`);
+      } catch (err) {
+        console.error(`[AI ERROR] Phase ${key} failed:`, err);
+        allPhaseData[key] = null;
+      }
     }
 
     return {
@@ -86,14 +83,14 @@ export async function generateAnalysis(data) {
  * Enforces JSON Schema and Phase Isolation
  */
 const runPhase = async (phaseKey, masterData) => {
-  const directive = getStrategicAnchor(phaseKey);
+  const directive = getStrategicAnchor(phaseKey, masterData);
   const schema = getSchemaForPhase(phaseKey);
   
   const prompt = `
   PHASE: "${phaseKey.toUpperCase()}"
   PRODUCT: ${masterData.productName} (${masterData.category})
   GOAL: ${masterData.goal}
-  AUDIENCE: ${masterData.targetMarket.join(', ')}
+  AUDIENCE: ${masterData.targetMarket?.join(', ') || 'General'}
 
   STRATEGIC DIRECTIVE:
   ${directive}
@@ -111,11 +108,11 @@ const runPhase = async (phaseKey, masterData) => {
   return await generateFromOpenRouter(prompt);
 };
 
-function getStrategicAnchor(key) {
+function getStrategicAnchor(key, masterData) {
   const anchors = {
     problem_definition: "Define the core problem. Focus on scope, constraints, and 'How Might We' questions. Do not suggest solutions yet.",
     user_segmentation: "Divide the market into behavioral segments and value clusters. Identify the primary hero persona.",
-    empathy_mapping: "Deep dive into the user's sensory experience (Thinks, Feels, Says, Does) specifically regarding ${masterData.productName}.",
+    empathy_mapping: `Deep dive into the user's sensory experience (Thinks, Feels, Says, Does) specifically regarding ${masterData.productName}.`,
     pain_point_analysis: "Quantify the friction. Separate symptoms from root causes. Focus on emotional and functional obstacles.",
     competitive_analysis: "Map the landscape. Focus on rival vulnerabilities and your sustainable competitive advantage (Moat).",
     ideation: "Synthesize high-impact concept groups and a 5-year 'Blue Sky' vision for the product.",
