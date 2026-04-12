@@ -49,10 +49,17 @@ export async function generateAnalysis(data) {
     let allPhaseData = {};
     let sessionContext = ""; // For context evolution
     
-    // Process phases sequentially to enable context evolution
+    // Process phases sequentially to enable context evolution and stay within rate limits
     for (const key of PHASE_KEYS) {
       try {
         console.log("PHASE:", key); 
+        
+        // Add a small delay between phases to avoid 429 errors on free tier providers
+        if (key !== PHASE_KEYS[0]) {
+          console.log("[STABILITY] Throttling request for 3s...");
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+
         const result = await runPhase(key, data, sessionContext);
         allPhaseData[key] = result;
         
